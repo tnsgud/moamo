@@ -22,4 +22,36 @@ abstract final class AppColors {
 
   // Status
   static const notification = Color(0xFFF63939);
+
+  // Book Colors
+  // Yellow
+  static const yellow = Color(0xFFFFBF1A);
+  static const yellow800 = Color(0xFFFFD25E);
+  static const yellow600 = Color(0xFFFFDC82);
+  static const yellow400 = Color(0xFFFFE5A1);
+  static const yellow200 = Color(0xFFFFEFC7);
+  // Green
+  static const green = Color(0xFF5CC31C);
+  static const green800 = Color(0xFF81D84D);
+  static const green600 = Color(0xFFA4ED76);
+  static const green400 = Color(0xFFCBF5B0);
+  static const green200 = Color(0xFFE6FBD8);
+  // Blue
+  static const blue = Color(0xFF3C4BBD);
+  static const blue800 = Color(0xFF5868E1);
+  static const blue600 = Color(0xFF6F7DEC);
+  static const blue400 = Color(0xFFABB4F9);
+  static const blue200 = Color(0xFFD9DDFB);
+  // Pink
+  static const pink = Color(0xFFDD3491);
+  static const pink800 = Color(0xFFE85EAA);
+  static const pink600 = Color(0xFFF385C1);
+  static const pink400 = Color(0xFFFFC9E7);
+  static const pink200 = Color(0xFFFFEAF6);
+  // Mono
+  static const mono = neutral90;
+  static const mono800 = neutral50;
+  static const mono600 = neutral20;
+  static const mono400 = neutral15;
+  static const mono200 = neutral05;
 }
