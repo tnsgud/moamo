@@ -7,6 +7,10 @@ class Moamo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(routerConfig: appRouter, theme: AppTheme.light);
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routerConfig: appRouter,
+      theme: AppTheme.light,
+    );
   }
 }
