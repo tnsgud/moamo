@@ -29,11 +29,26 @@ class LoginScreen extends StatelessWidget {
                         color: AppColors.neutral,
                       ),
                     ),
-                    Text(
-                      '오늘은 어떤 이야기를 모아볼까요?',
-                      style: AppTextStyles.h2.copyWith(
-                        color: AppColors.neutral,
-                      ),
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Positioned(
+                          left: 50,
+                          right: -4,
+                          top: -6,
+                          bottom: -6,
+                          child: Image.asset(
+                            'assets/images/text_highlighting.png',
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                        Text(
+                          '오늘은 어떤 이야기를 모아볼까요?',
+                          style: AppTextStyles.h2.copyWith(
+                            color: AppColors.neutral,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
