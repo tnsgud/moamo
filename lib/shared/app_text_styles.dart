@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-abstract final class AppTextStyle {
+abstract final class AppTextStyles {
   // H1
   static const h1 = TextStyle(fontSize: 24);
   static const h1Bold = TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
