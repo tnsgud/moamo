@@ -37,6 +37,7 @@ dependencies:
   go_router: ^18.0.1
   flutter_native_splash: ^2.4.8
   flutter_svg: ^2.3.0
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:
