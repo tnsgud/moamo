@@ -60,48 +60,20 @@ class AppBottomNavigation extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height:
-              AppBaseSizes.bottomNavigationBarHeight +
-              MediaQuery.paddingOf(context).bottom / 2,
+          height: AppBaseSizes.bottomNavigationBarHeight,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children:
-                // [
-                //   NavigationButton(
-                //     item: _items[0],
-                //     isSelected: true,
-                //     onTap: () => {},
-                //   ),
-                //   SizedBox(width: 48),
-                //   NavigationButton(
-                //     item: _items[1],
-                //     isSelected: false,
-                //     onTap: () => {},
-                //   ),
-                //   SizedBox(width: 48),
-                //   NavigationButton(
-                //     item: _items[2],
-                //     isSelected: false,
-                //     onTap: () => {},
-                //   ),
-                //   SizedBox(width: 48),
-                //   NavigationButton(
-                //     item: _items[3],
-                //     isSelected: false,
-                //     onTap: () => {},
-                //   ),
-                // ],
-                _items
-                    .mapIndexed(
-                      (i, e) => Expanded(
-                        child: NavigationButton(
-                          item: e,
-                          isSelected: i == selectedIndex,
-                          onTap: () => onTap(i),
-                        ),
-                      ),
-                    )
-                    .toList(),
+            children: _items
+                .mapIndexed(
+                  (i, e) => Expanded(
+                    child: NavigationButton(
+                      item: e,
+                      isSelected: i == selectedIndex,
+                      onTap: () => onTap(i),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ),
       ),

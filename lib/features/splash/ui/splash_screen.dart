@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
     FlutterNativeSplash.remove();
     Future.delayed(SPLASH_SCREEN_DURATION, () {
       if (mounted) {
-        context.go('/login');
+        context.go('/library');
       }
     });
   }
