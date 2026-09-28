@@ -8,7 +8,7 @@ abstract final class AppTheme {
       seedColor: AppColors.primary,
       brightness: Brightness.light,
     ),
-    scaffoldBackgroundColor: AppColors.neutral05,
+    scaffoldBackgroundColor: AppColors.neutral0,
   );
 
   static ThemeData get dark => ThemeData(
