@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Moamo — a Flutter app (Android/iOS) for gathering around books ("책으로 모이고, 이야기로 이어지는 곳"). Early stage: design system and app shell are in place, feature screens are stubs. Flutter SDK 3.47.x, Dart `^3.12.2`.
+Moamo — a Flutter app (Android/iOS) for gathering around books ("책으로 모이고, 이야기로 이어지는 곳"). Early stage: design system, app shell, splash and login UI are in place; no state management, data layer, or backend integration yet. Flutter SDK 3.47.x, Dart `^3.12.2`.
 
 ## Commands
 
@@ -23,17 +23,22 @@ dart run flutter_native_splash:create   # regenerate native splash after editing
 
 - `lib/main.dart` — entry point. Calls `FlutterNativeSplash.preserve()`; the native splash stays up until `FlutterNativeSplash.remove()` is called in `SplashScreen`.
 - `lib/app/` — app-wide wiring only: `Moamo` root widget (`MaterialApp.router`), `AppTheme`, and the single `GoRouter` in `router.dart` (initial route `/splash`). Routes are kept flat, not nested.
-- `lib/features/<feature>/ui/<name>_screen.dart` — screens, one folder per feature (`auth`, `splash`).
+- `lib/features/<feature>/ui/<name>_screen.dart` — screens, one folder per feature (`auth`, `splash`). Screens are currently static layouts (e.g. login buttons are plain `Container`s with no handlers).
 - `lib/shared/` — design tokens as `abstract final class` with `static const` members: `AppColors`, `AppTextStyles`, `AppRadius`, `AppIconSizes`, `AppBaseSizes`. Use these instead of hard-coded colors, font sizes, or spacing. Text styles apply letter spacing as `fontSize * -0.01`.
+- Font: `NanumSquareNeo` (weights 400/700, `assets/fonts/`), set globally via `fontFamily` in `AppTheme`.
 
 ## Splash screen
 
 Two stages, because the Android 12+ native splash API can't render the design (it crops the center image to a circle and caps branding at ~200×80dp):
 
 1. Native splash (`flutter_native_splash.yaml`) shows only the background color `#213448` (`AppColors.secondary100`). Android 12 uses `assets/images/transparent.png` so the launcher icon isn't shown.
-2. `SplashScreen` (Flutter) is where the actual design (tagline, logo, bottom character image) is drawn and navigation to `/login` happens. It is currently a stub that only removes the native splash.
+2. `SplashScreen` (Flutter) removes the native splash in `initState`, draws the actual design (tagline, logo, bottom character image), and after 2 seconds calls `context.go('/login')`.
 
 Files under `android/app/src/main/res/` and `ios/Runner/` related to launch screens are generated — edit the yaml and regenerate instead. iOS caches launch screens; delete the app to see changes.
+
+## Tests
+
+`test/widget_test.dart` is an empty placeholder; there is no real test coverage yet.
 
 ## Conventions
 
