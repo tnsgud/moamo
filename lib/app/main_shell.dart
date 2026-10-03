@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/library/ui/widgets/library_fab.dart';
 import 'package:moamo/features/navigation/ui/app_bottom_navigation.dart';
 
 class MainShell extends StatelessWidget {
@@ -11,6 +12,9 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: navigationShell,
+      floatingActionButton: navigationShell.currentIndex == 0
+          ? LibraryFab()
+          : null,
       bottomNavigationBar: AppBottomNavigation(
         selectedIndex: navigationShell.currentIndex,
         onTap: (index) {
