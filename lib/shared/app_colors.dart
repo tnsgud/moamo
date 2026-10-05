@@ -5,7 +5,7 @@ abstract final class AppColors {
   static const primary = Color(0xFFFFD467);
   static const secondary100 = Color(0xFF213448);
   static const profile = Color(0xFFEDF1D0);
-  static const primary80 = Color.fromRGBO(255, 212, 103, 0.8);
+  static const primary08 = Color.fromRGBO(255, 212, 103, 0.08);
 
   // Neutral
   static const neutral = Color(0xFF121212);
