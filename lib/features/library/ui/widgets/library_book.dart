@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class LibraryBook extends StatelessWidget {
   const LibraryBook({
@@ -19,10 +20,7 @@ class LibraryBook extends StatelessWidget {
     return Container(
       width: isExtended ? 65 : 16,
       height: 80,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(4),
-        color: color,
-      ),
+      decoration: BoxDecoration(borderRadius: AppRadius.xxs, color: color),
       padding: isExtended
           ? EdgeInsets.symmetric(horizontal: 8)
           : EdgeInsets.symmetric(horizontal: 2),

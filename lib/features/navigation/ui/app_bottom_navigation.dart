@@ -1,8 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:moamo/features/navigation/ui/widgets/navigation_button.dart';
-import 'package:moamo/shared/app_base_sizes.dart';
-import 'package:moamo/shared/app_colors.dart';
+import 'package:moamo/shared/dimension/app_base_sizes.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
 import '../model/navigation_item.dart';
 
 class AppBottomNavigation extends StatelessWidget {
@@ -18,23 +18,23 @@ class AppBottomNavigation extends StatelessWidget {
   static const _items = [
     NavigationItem(
       label: '서재',
-      iconPath: 'assets/icons/home_none.svg',
-      activeIconPath: 'assets/icons/home_active.svg',
+      iconName: 'home_none',
+      activeIconName: 'home_active',
     ),
     NavigationItem(
       label: '커뮤니티',
-      iconPath: 'assets/icons/community_none.svg',
-      activeIconPath: 'assets/icons/community_active.svg',
+      iconName: 'community_none',
+      activeIconName: 'community_active',
     ),
     NavigationItem(
       label: '인증',
-      iconPath: 'assets/icons/certification_none.svg',
-      activeIconPath: 'assets/icons/certification_active.svg',
+      iconName: 'certification_none',
+      activeIconName: 'certification_active',
     ),
     NavigationItem(
       label: '마이',
-      iconPath: 'assets/icons/my_none.svg',
-      activeIconPath: 'assets/icons/my_active.svg',
+      iconName: 'my_none',
+      activeIconName: 'my_active',
     ),
   ];
 

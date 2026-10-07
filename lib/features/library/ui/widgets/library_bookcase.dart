@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:moamo/features/library/ui/widgets/library_book.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_radius.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class LibraryBookcase extends StatelessWidget {
   const LibraryBookcase({super.key, required this.title});
@@ -15,7 +15,7 @@ class LibraryBookcase extends StatelessWidget {
       padding: EdgeInsets.all(21),
       decoration: BoxDecoration(
         border: Border.all(color: AppColors.neutral15, width: 0.5),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        borderRadius: AppRadius.lg,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

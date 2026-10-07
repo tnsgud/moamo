@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moamo/shared/app_colors.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
 
 abstract final class AppTheme {
   static ThemeData get light => ThemeData(

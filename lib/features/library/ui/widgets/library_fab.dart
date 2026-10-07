@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_radius.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/svg_icon.dart';
 
 class LibraryFab extends StatelessWidget {
   const LibraryFab({super.key});
@@ -16,18 +16,13 @@ class LibraryFab extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.secondary100,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
+            borderRadius: AppRadius.xl,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SvgPicture.asset(
-                'assets/icons/guestbook.svg',
-                colorFilter: ColorFilter.mode(
-                  AppColors.neutral0,
-                  BlendMode.srcIn,
-                ),
-              ),
+              SvgIcon(name: 'guestbook', color: AppColors.neutral0),
+
               SizedBox(width: 6),
               Text(
                 '방명록',
@@ -46,7 +41,7 @@ class LibraryFab extends StatelessWidget {
             height: 20,
             decoration: BoxDecoration(
               color: AppColors.notification,
-              borderRadius: BorderRadius.circular(AppRadius.xxl),
+              borderRadius: AppRadius.xxl,
             ),
             child: Center(
               child: Text(

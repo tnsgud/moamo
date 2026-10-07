@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:moamo/shared/app_base_sizes.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_icon_sizes.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:go_router/go_router.dart';
+import 'package:moamo/shared/dimension/app_base_sizes.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_icon_sizes.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/svg_icon.dart';
 
 class LibraryAppBar extends StatelessWidget {
   const LibraryAppBar({super.key});
@@ -22,20 +23,24 @@ class LibraryAppBar extends StatelessWidget {
               style: AppTextStyles.h3.copyWith(color: AppColors.neutral90),
             ),
           ),
-          SvgPicture.asset(
-            'assets/icons/bookcase.svg',
+          SvgIcon(
+            name: 'bookcase',
             width: AppIconSizes.lg,
             height: AppIconSizes.lg,
           ),
+
           SizedBox(width: 10),
-          SvgPicture.asset(
-            'assets/icons/search.svg',
-            width: AppIconSizes.lg,
-            height: AppIconSizes.lg,
+          GestureDetector(
+            onTap: () => context.push('/book-search'),
+            child: SvgIcon(
+              name: 'search',
+              width: AppIconSizes.lg,
+              height: AppIconSizes.lg,
+            ),
           ),
           SizedBox(width: 10),
-          SvgPicture.asset(
-            'assets/icons/notice_active.svg',
+          SvgIcon(
+            name: 'notice_active',
             width: AppIconSizes.lg,
             height: AppIconSizes.lg,
           ),

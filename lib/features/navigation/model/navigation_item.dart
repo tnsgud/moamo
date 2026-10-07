@@ -1,11 +1,11 @@
 class NavigationItem {
   final String label;
-  final String iconPath;
-  final String activeIconPath;
+  final String iconName;
+  final String activeIconName;
 
   const NavigationItem({
     required this.label,
-    required this.iconPath,
-    required this.activeIconPath,
+    required this.iconName,
+    required this.activeIconName,
   });
 }

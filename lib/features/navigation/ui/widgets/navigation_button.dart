@@ -1,9 +1,9 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:moamo/features/navigation/model/navigation_item.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_icon_sizes.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_icon_sizes.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/svg_icon.dart';
 
 class NavigationButton extends StatelessWidget {
   final NavigationItem item;
@@ -25,11 +25,12 @@ class NavigationButton extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SvgPicture.asset(
-            isSelected ? item.activeIconPath : item.iconPath,
+          SvgIcon(
+            name: isSelected ? item.activeIconName : item.iconName,
             width: AppIconSizes.md,
             height: AppIconSizes.md,
           ),
+
           const SizedBox(height: 4),
           Text(
             item.label,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_radius.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class LibraryChips extends StatelessWidget {
   LibraryChips({super.key});
@@ -17,7 +17,7 @@ class LibraryChips extends StatelessWidget {
             (e) => Container(
               decoration: BoxDecoration(
                 color: AppColors.neutral05,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
+                borderRadius: AppRadius.sm,
               ),
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               child: Row(

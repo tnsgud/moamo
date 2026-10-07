@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:moamo/shared/app_base_sizes.dart';
-import 'package:moamo/shared/app_colors.dart';
-import 'package:moamo/shared/app_radius.dart';
-import 'package:moamo/shared/app_text_styles.dart';
+import 'package:moamo/shared/dimension/app_base_sizes.dart';
+import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -61,7 +61,7 @@ class LoginScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: AppRadius.md,
                 ),
                 child: Center(
                   child: Text(
@@ -78,7 +78,7 @@ class LoginScreen extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 16),
                 decoration: BoxDecoration(
                   color: AppColors.secondary100,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
+                  borderRadius: AppRadius.md,
                 ),
                 child: Center(
                   child: Text(
