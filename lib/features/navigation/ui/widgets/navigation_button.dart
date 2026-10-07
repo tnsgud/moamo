@@ -27,8 +27,7 @@ class NavigationButton extends StatelessWidget {
         children: [
           SvgIcon(
             name: isSelected ? item.activeIconName : item.iconName,
-            width: AppIconSizes.md,
-            height: AppIconSizes.md,
+            size: AppIconSizes.md,
           ),
 
           const SizedBox(height: 4),
