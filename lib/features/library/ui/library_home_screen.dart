@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moamo/features/library/ui/widgets/library_app_bar.dart';
-import 'package:moamo/features/library/ui/widgets/library_bookcase.dart';
+import 'package:moamo/shared/widget/bookcase.dart';
 import 'package:moamo/features/library/ui/widgets/library_chips.dart';
 
 class LibraryHomeScreen extends StatelessWidget {
@@ -17,7 +17,7 @@ class LibraryHomeScreen extends StatelessWidget {
         Flexible(
           child: ListView.separated(
             itemBuilder: (context, index) {
-              return LibraryBookcase(title: '책장 ${index + 1}');
+              return Bookcase(title: '책장 ${index + 1}');
             },
             separatorBuilder: (context, index) => SizedBox(height: 20),
             itemCount: 5,
