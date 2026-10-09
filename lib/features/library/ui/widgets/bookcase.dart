@@ -14,7 +14,7 @@ class Bookcase extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.push('/book-case/1');
+        context.push('/bookcase/1');
       },
       child: Container(
         padding: EdgeInsets.all(21),
