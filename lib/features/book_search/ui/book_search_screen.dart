@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_search_app_bar.dart';
-import 'package:moamo/features/book_search/ui/widgets/book_search_input.dart';
+import 'package:moamo/shared/widget/search_field.dart';
 import 'package:moamo/features/book_search/ui/widgets/category_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/recent_search_history.dart';
-import 'package:moamo/shared/dimension/app_icon_sizes.dart';
+import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
-import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookSearchScreen extends StatefulWidget {
   const BookSearchScreen({super.key});
@@ -90,8 +89,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
       child: Column(
         children: [
           BookSearchAppBar(),
-          SizedBox(height: 14),
-          BookSearchInput(onSubmitted: (value) => _onSubmitted(value)),
+          SearchField(onSubmitted: (value) => _onSubmitted(value)),
           SizedBox(height: 24),
           RecentSearchHistory(data: ['해리포터', '오디세이', '후지이 카제', '식케이', '디오니소스']),
           SizedBox(height: 24),
@@ -99,15 +97,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           SizedBox(height: 32),
           BookList(
             title: title,
-            action: Container(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary08,
-                borderRadius: AppRadius.sm,
-                border: Border.all(color: AppColors.primary),
-              ),
-              child: SvgIcon(name: 'sorting', size: AppIconSizes.sm),
-            ),
+            action: SortButton(),
             data: _count == 0
                 ? []
                 : searchResultVisible

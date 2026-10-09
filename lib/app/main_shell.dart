@@ -14,15 +14,13 @@ class MainShell extends StatelessWidget {
     final path = GoRouterState.of(context).uri.path;
 
     return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.fromLTRB(
-          AppBaseSizes.bodyHorizontal,
-          MediaQuery.paddingOf(context).top,
-          AppBaseSizes.bodyHorizontal,
-          0,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppBaseSizes.bodyHorizontal,
+          ),
+          child: navigationShell,
         ),
-
-        child: navigationShell,
       ),
       floatingActionButton: path == '/library' ? LibraryFab() : null,
       bottomNavigationBar: AppBottomNavigation(

@@ -12,14 +12,10 @@ class BookSearchAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      actionsPadding: EdgeInsets.zero,
-      backgroundColor: AppColors.neutral0,
-      leadingWidth: AppIconSizes.lg,
       leading: GestureDetector(
         onTap: () => context.pop(),
         child: SvgIcon(size: AppIconSizes.lg, name: 'back'),
       ),
-      centerTitle: true,
       title: Text(
         '책 검색',
         style: AppTextStyles.h3.copyWith(color: AppColors.neutral90),
