@@ -2,9 +2,10 @@ import 'package:go_router/go_router.dart';
 import 'package:moamo/app/main_shell.dart';
 import 'package:moamo/features/auth/ui/login_screen.dart';
 import 'package:moamo/features/book_search/ui/book_search_screen.dart';
+import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
-import 'package:moamo/features/book_case/ui/book_case_detail_screen.dart';
+import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
 import 'package:moamo/features/library/ui/library_home_screen.dart';
 import 'package:moamo/features/my/ui/my_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
@@ -29,9 +30,13 @@ final appRouter = GoRouter(
               builder: (context, state) => BookSearchScreen(),
             ),
             GoRoute(
-              path: '/book-case/:id',
+              path: '/bookcase/new',
+              builder: (context, state) => BookcaseFormScreen(),
+            ),
+            GoRoute(
+              path: '/bookcase/:id/edit',
               builder: (context, state) {
-                return BookCaseDetailScreen(
+                return BookcaseFormScreen(
                   id: int.parse(state.pathParameters['id']!),
                 );
               },
@@ -60,6 +65,11 @@ final appRouter = GoRouter(
           ],
         ),
       ],
+    ),
+
+    GoRoute(
+      path: '/bookcase/decorate',
+      builder: (context, state) => BookcaseDecorateScreen(),
     ),
   ],
 );

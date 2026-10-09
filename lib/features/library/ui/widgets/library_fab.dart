@@ -34,7 +34,8 @@ class LibraryFab extends StatelessWidget {
           ),
         ),
         Positioned(
-          right: -4,
+          // 화면 본문(Navigator) 밖으로 나가면 잘리므로 오른쪽은 0
+          right: 0,
           top: -4,
           child: Container(
             width: 20,

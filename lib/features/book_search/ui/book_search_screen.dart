@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_search_app_bar.dart';
+import 'package:moamo/shared/widget/book_info_tile.dart';
 import 'package:moamo/shared/widget/search_field.dart';
 import 'package:moamo/features/book_search/ui/widgets/category_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/recent_search_history.dart';
 import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
-import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class BookSearchScreen extends StatefulWidget {
@@ -119,38 +119,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
               physics: const NeverScrollableScrollPhysics(),
               mainAxisExtent: 130,
               children: [
-                for (final book in _books.take(4))
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: AppColors.blue,
-                          borderRadius: AppRadius.xxs,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        book.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption2.copyWith(
-                          color: AppColors.neutral90,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        book.author,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.caption2.copyWith(
-                          color: AppColors.neutral50,
-                        ),
-                      ),
-                    ],
-                  ),
+                for (final book in _books.take(4)) BookInfoTile(book: book),
               ],
             ),
           ],
