@@ -85,7 +85,7 @@ abstract final class AppTextStyles {
     letterSpacing: 14 * -0.01,
   );
 
-  /// font size: 14
+  /// font size: 12
   static const btn2 = TextStyle(fontSize: 12, letterSpacing: 12 * -0.01);
 
   /// font size: 12
