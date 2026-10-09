@@ -4,12 +4,13 @@ import 'package:moamo/features/auth/ui/login_screen.dart';
 import 'package:moamo/features/book_search/ui/book_search_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
+import 'package:moamo/features/book_case/ui/book_case_detail_screen.dart';
 import 'package:moamo/features/library/ui/library_home_screen.dart';
 import 'package:moamo/features/my/ui/my_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/book-search',
+  initialLocation: '/library',
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => LoginScreen()),
@@ -26,6 +27,14 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/book-search',
               builder: (context, state) => BookSearchScreen(),
+            ),
+            GoRoute(
+              path: '/book-case/:id',
+              builder: (context, state) {
+                return BookCaseDetailScreen(
+                  id: int.parse(state.pathParameters['id']!),
+                );
+              },
             ),
           ],
         ),

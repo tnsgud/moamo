@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
