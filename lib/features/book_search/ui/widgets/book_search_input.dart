@@ -6,7 +6,9 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookSearchInput extends StatelessWidget {
-  const BookSearchInput({super.key});
+  const BookSearchInput({super.key, required this.onSubmitted});
+
+  final Function(String) onSubmitted;
 
   @override
   Widget build(BuildContext context) {
@@ -22,6 +24,7 @@ class BookSearchInput extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
+              onSubmitted: onSubmitted,
               cursorHeight: 18,
               textInputAction: TextInputAction.search,
               textAlignVertical: TextAlignVertical.center,

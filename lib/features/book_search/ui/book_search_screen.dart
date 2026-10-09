@@ -8,11 +8,17 @@ import 'package:moamo/features/book_search/ui/widgets/recent_search_history.dart
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
+import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
-class BookSearchScreen extends StatelessWidget {
-  BookSearchScreen({super.key});
+class BookSearchScreen extends StatefulWidget {
+  const BookSearchScreen({super.key});
 
+  @override
+  State<BookSearchScreen> createState() => _BookSearchScreenState();
+}
+
+class _BookSearchScreenState extends State<BookSearchScreen> {
   final List<Book> _books = [
     Book(
       title: '해리포터와 마법사의 돌',
@@ -51,21 +57,48 @@ class BookSearchScreen extends StatelessWidget {
     ),
   ];
 
+  bool searchResultVisible = true;
+  int _count = 4;
+  String title = '많은 사람들이 찾고 있어요';
+
+  void _onSubmitted(String value) {
+    if (value.contains('h')) {
+      setState(() {
+        searchResultVisible = false;
+        _count = 0;
+        title = '검색결과: 0건';
+      });
+      return;
+    }
+
+    _count = 4;
+
+    setState(() {
+      searchResultVisible = !searchResultVisible;
+
+      if (searchResultVisible) {
+        title = '검색결과: 1건';
+      } else {
+        title = '많은 사람들이 찾고 있어요';
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        BookSearchAppBar(),
-        SizedBox(height: 14),
-        BookSearchInput(),
-        SizedBox(height: 24),
-        RecentSearchHistory(data: ['해리포터', '오디세이', '후지이 카제', '식케이', '디오니소스']),
-        SizedBox(height: 24),
-        CategoryChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
-        SizedBox(height: 32),
-        Expanded(
-          child: BookList(
-            title: '많은 사람들이 찾고 있어요',
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          BookSearchAppBar(),
+          SizedBox(height: 14),
+          BookSearchInput(onSubmitted: (value) => _onSubmitted(value)),
+          SizedBox(height: 24),
+          RecentSearchHistory(data: ['해리포터', '오디세이', '후지이 카제', '식케이', '디오니소스']),
+          SizedBox(height: 24),
+          CategoryChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
+          SizedBox(height: 32),
+          BookList(
+            title: title,
             action: Container(
               padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
               decoration: BoxDecoration(
@@ -75,10 +108,64 @@ class BookSearchScreen extends StatelessWidget {
               ),
               child: SvgIcon(name: 'sorting', size: AppIconSizes.sm),
             ),
-            data: _books,
+            data: _count == 0
+                ? []
+                : searchResultVisible
+                ? _books.take(1).toList()
+                : _books,
           ),
-        ),
-      ],
+          if (searchResultVisible) ...[
+            Text(
+              '함께 하면 좋을 책',
+              style: AppTextStyles.subtitleBold.copyWith(
+                color: AppColors.neutral90,
+              ),
+            ),
+
+            GridView.count(
+              crossAxisCount: 4,
+              crossAxisSpacing: 25,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisExtent: 130,
+              children: [
+                for (final book in _books.take(4))
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppColors.blue,
+                          borderRadius: AppRadius.xxs,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        book.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption2.copyWith(
+                          color: AppColors.neutral90,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        book.author,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption2.copyWith(
+                          color: AppColors.neutral50,
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

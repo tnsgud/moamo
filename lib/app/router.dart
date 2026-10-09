@@ -9,7 +9,7 @@ import 'package:moamo/features/my/ui/my_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/library',
+  initialLocation: '/book-search',
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => SplashScreen()),
     GoRoute(path: '/login', builder: (context, state) => LoginScreen()),
