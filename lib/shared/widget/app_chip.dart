@@ -3,8 +3,8 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
-class CategoryChip extends StatelessWidget {
-  const CategoryChip({super.key, required this.name, required this.isSelected});
+class AppChip extends StatelessWidget {
+  const AppChip({super.key, required this.name, required this.isSelected});
 
   final String name;
   final bool isSelected;

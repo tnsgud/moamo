@@ -5,9 +5,14 @@ import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
-class BookSearchInput extends StatelessWidget {
-  const BookSearchInput({super.key, required this.onSubmitted});
+class SearchField extends StatelessWidget {
+  const SearchField({
+    super.key,
+    required this.onSubmitted,
+    this.hintText = '책 제목 / 작가명으로 검색해보세요.',
+  });
 
+  final String? hintText;
   final Function(String) onSubmitted;
 
   @override
@@ -32,7 +37,7 @@ class BookSearchInput extends StatelessWidget {
               decoration: InputDecoration(
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
-                hintText: '책 제목 / 작가명으로 검색해보세요.',
+                hintText: hintText,
                 hintStyle: AppTextStyles.btn2.copyWith(
                   color: AppColors.neutral40,
                 ),
