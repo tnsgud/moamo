@@ -9,6 +9,7 @@ import 'package:moamo/features/bookcase_list/ui/bookcase_list_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/book_board_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
+import 'package:moamo/features/community/ui/free_board_screen.dart';
 import 'package:moamo/features/community/ui/post_write_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
 import 'package:moamo/features/guestbook/ui/guestbook_screen.dart';
@@ -79,8 +80,18 @@ final appRouter = GoRouter(
             ),
             GoRoute(
               path: '/community/book/:id/write',
+              builder: (context, state) => PostWriteScreen(),
+            ),
+            GoRoute(
+              path: '/community/free',
+              builder: (context, state) => FreeBoardScreen(),
+            ),
+            GoRoute(
+              path: '/community/free/write',
               builder: (context, state) => PostWriteScreen(
-                bookId: int.parse(state.pathParameters['id']!),
+                title: '게시글',
+                categories: ['끄적끄적', '책 찾아주세요', '서재 자랑'],
+                saveIcon: 'add',
               ),
             ),
           ],
