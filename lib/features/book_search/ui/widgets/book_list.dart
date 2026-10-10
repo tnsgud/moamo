@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -50,7 +51,10 @@ class BookList extends StatelessWidget {
             ),
           for (var i = 0; i < data.length; i++) ...[
             if (i > 0) SizedBox(height: 20),
-            BookListItem(book: data[i]),
+            GestureDetector(
+              onTap: () => context.push('/book/${i + 1}'),
+              child: BookListItem(book: data[i]),
+            ),
           ],
           SizedBox(height: 12),
         ],
