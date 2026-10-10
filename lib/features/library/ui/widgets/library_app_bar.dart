@@ -25,7 +25,10 @@ class LibraryAppBar extends StatelessWidget {
           child: SvgIcon(name: 'search', size: AppIconSizes.lg),
         ),
         SizedBox(width: 10),
-        SvgIcon(name: 'notice_active', size: AppIconSizes.lg),
+        GestureDetector(
+          onTap: () => context.push('/notification'),
+          child: SvgIcon(name: 'notice_active', size: AppIconSizes.lg),
+        ),
       ],
     );
   }
