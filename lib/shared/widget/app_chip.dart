@@ -4,10 +4,16 @@ import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class AppChip extends StatelessWidget {
-  const AppChip({super.key, required this.name, required this.isSelected});
+  const AppChip({
+    super.key,
+    required this.name,
+    required this.isSelected,
+    this.textStyle,
+  });
 
   final String name;
   final bool isSelected;
+  final TextStyle? textStyle;
 
   @override
   Widget build(BuildContext context) {
@@ -19,9 +25,11 @@ class AppChip extends StatelessWidget {
       ),
       child: Text(
         name,
-        style: isSelected
-            ? AppTextStyles.btn2Bold.copyWith(color: AppColors.neutral0)
-            : AppTextStyles.btn2.copyWith(color: AppColors.neutral50),
+        style:
+            textStyle ??
+            (isSelected
+                ? AppTextStyles.btn2Bold.copyWith(color: AppColors.neutral0)
+                : AppTextStyles.btn2.copyWith(color: AppColors.neutral50)),
       ),
     );
   }
