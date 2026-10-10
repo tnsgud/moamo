@@ -10,10 +10,14 @@ class SearchField extends StatelessWidget {
     super.key,
     required this.onSubmitted,
     this.hintText = '책 제목 / 작가명으로 검색해보세요.',
+    this.controller,
+    this.focusNode,
   });
 
   final String? hintText;
   final Function(String) onSubmitted;
+  final TextEditingController? controller;
+  final FocusNode? focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,8 @@ class SearchField extends StatelessWidget {
         children: [
           Expanded(
             child: TextField(
+              controller: controller,
+              focusNode: focusNode,
               onSubmitted: onSubmitted,
               cursorHeight: 18,
               textInputAction: TextInputAction.search,
