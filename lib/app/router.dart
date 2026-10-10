@@ -16,6 +16,7 @@ import 'package:moamo/features/community/ui/post_write_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
 import 'package:moamo/features/guestbook/ui/guestbook_screen.dart';
 import 'package:moamo/features/library/ui/library_home_screen.dart';
+import 'package:moamo/features/my/ui/my_items_screen.dart';
 import 'package:moamo/features/my/ui/my_screen.dart';
 import 'package:moamo/features/notification/ui/notification_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
@@ -126,6 +127,7 @@ final appRouter = GoRouter(
       ],
     ),
 
+    GoRoute(path: '/my/items', builder: (context, state) => MyItemsScreen()),
     GoRoute(
       path: '/notification',
       builder: (context, state) => NotificationScreen(),
