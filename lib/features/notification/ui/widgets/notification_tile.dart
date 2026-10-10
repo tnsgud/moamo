@@ -17,11 +17,9 @@ class NotificationTile extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // TODO: 읽지 않은 알림용 노란색 아이콘이 준비되면 교체
         SvgIcon(
-          name: 'comment',
+          name: 'community_${read ? 'none' : 'active'}',
           size: AppIconSizes.md,
-          color: read ? AppColors.neutral40 : AppColors.neutral90,
         ),
         SizedBox(width: 8),
         Expanded(
