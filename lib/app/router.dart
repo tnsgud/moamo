@@ -6,6 +6,7 @@ import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dar
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
+import 'package:moamo/features/guestbook/ui/guestbook_screen.dart';
 import 'package:moamo/features/library/ui/library_home_screen.dart';
 import 'package:moamo/features/my/ui/my_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
@@ -67,6 +68,7 @@ final appRouter = GoRouter(
       ],
     ),
 
+    GoRoute(path: '/guestbook', builder: (context, state) => GuestbookScreen()),
     GoRoute(
       path: '/bookcase/decorate',
       builder: (context, state) => BookcaseDecorateScreen(),
