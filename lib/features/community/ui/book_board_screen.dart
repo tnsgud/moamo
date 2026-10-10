@@ -108,12 +108,12 @@ class BookBoardScreen extends StatelessWidget {
                   '커뮤니티 게시물',
                   trailing: Row(
                     children: [
-                      SvgIcon(name: 'sorting', size: AppIconSizes.sm),
+                      SvgIcon(name: 'sorting', size: AppIconSizes.xs),
                       SizedBox(width: 6),
                       Text(
                         '최신순',
-                        style: AppTextStyles.btn2.copyWith(
-                          color: AppColors.neutral60,
+                        style: AppTextStyles.caption1Bold.copyWith(
+                          color: AppColors.neutral70,
                         ),
                       ),
                     ],

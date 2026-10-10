@@ -27,7 +27,7 @@ class PostListItem extends StatelessWidget {
                   post.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.subtitle.copyWith(
+                  style: AppTextStyles.body1.copyWith(
                     color: AppColors.neutral90,
                   ),
                 ),
@@ -39,7 +39,7 @@ class PostListItem extends StatelessWidget {
             post.content,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyles.body1.copyWith(color: AppColors.neutral70),
+            style: AppTextStyles.body2.copyWith(color: AppColors.neutral70),
           ),
           SizedBox(height: 16),
           Row(
@@ -47,7 +47,7 @@ class PostListItem extends StatelessWidget {
             children: [
               Text(
                 post.author,
-                style: AppTextStyles.body1.copyWith(color: AppColors.neutral40),
+                style: AppTextStyles.body2.copyWith(color: AppColors.neutral50),
               ),
               Row(
                 children: [
@@ -64,7 +64,7 @@ class PostListItem extends StatelessWidget {
                   SizedBox(width: 8),
                   Text(
                     post.date,
-                    style: AppTextStyles.subtitle.copyWith(
+                    style: AppTextStyles.caption2.copyWith(
                       color: AppColors.neutral40,
                     ),
                   ),
