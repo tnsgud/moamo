@@ -4,7 +4,9 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class EmojiPanel extends StatelessWidget {
-  const EmojiPanel({super.key});
+  const EmojiPanel({super.key, this.onSelected});
+
+  final ValueChanged<int>? onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +38,13 @@ class EmojiPanel extends StatelessWidget {
               children: List.generate(
                 8,
                 // TODO: 이모티콘 이미지가 준비되면 교체
-                (index) => DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.profile,
-                    shape: BoxShape.circle,
+                (index) => GestureDetector(
+                  onTap: () => onSelected?.call(index),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.profile,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
               ),

@@ -14,12 +14,14 @@ class GuestbookInputBar extends StatelessWidget {
     required this.onEmojiTap,
     required this.onSend,
     this.hintText = '방문자들에게 인사해 보세요.',
+    this.controller,
   });
 
   final bool emojiOpen;
   final VoidCallback onEmojiTap;
   final VoidCallback onSend;
   final String hintText;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class GuestbookInputBar extends StatelessWidget {
         SizedBox(width: 10),
         Expanded(
           child: Container(
-            height: 46,
+            constraints: BoxConstraints(minHeight: 46),
             padding: EdgeInsets.only(left: 20, right: 12),
             decoration: BoxDecoration(
               color: AppColors.neutral05,
@@ -39,6 +41,9 @@ class GuestbookInputBar extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: controller,
+                    minLines: 1,
+                    maxLines: 6,
                     style: AppTextStyles.body1.copyWith(
                       color: AppColors.neutral60,
                     ),

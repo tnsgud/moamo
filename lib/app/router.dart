@@ -11,6 +11,7 @@ import 'package:moamo/features/community/ui/book_board_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
 import 'package:moamo/features/community/ui/community_search_screen.dart';
 import 'package:moamo/features/community/ui/free_board_screen.dart';
+import 'package:moamo/features/community/ui/post_detail_screen.dart';
 import 'package:moamo/features/community/ui/post_write_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
 import 'package:moamo/features/guestbook/ui/guestbook_screen.dart';
@@ -87,6 +88,12 @@ final appRouter = GoRouter(
               path: '/community/search',
               builder: (context, state) => CommunitySearchScreen(
                 query: state.uri.queryParameters['q'] ?? '',
+              ),
+            ),
+            GoRoute(
+              path: '/community/post/:id',
+              builder: (context, state) => PostDetailScreen(
+                postId: int.parse(state.pathParameters['id']!),
               ),
             ),
             GoRoute(
