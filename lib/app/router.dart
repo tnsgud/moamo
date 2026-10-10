@@ -9,6 +9,7 @@ import 'package:moamo/features/bookcase_list/ui/bookcase_list_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/book_board_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
+import 'package:moamo/features/community/ui/community_search_screen.dart';
 import 'package:moamo/features/community/ui/free_board_screen.dart';
 import 'package:moamo/features/community/ui/post_write_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
@@ -81,6 +82,12 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/community/book/:id/write',
               builder: (context, state) => PostWriteScreen(),
+            ),
+            GoRoute(
+              path: '/community/search',
+              builder: (context, state) => CommunitySearchScreen(
+                query: state.uri.queryParameters['q'] ?? '',
+              ),
             ),
             GoRoute(
               path: '/community/free',

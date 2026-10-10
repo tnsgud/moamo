@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moamo/features/community/model/community_post.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
@@ -91,7 +92,18 @@ class _CommunityMainScreenState extends State<CommunityMainScreen> {
           onSelected: (i) => setState(() => _tab = i),
         ),
         SizedBox(height: 8),
-        SearchField(hintText: '책 정보로 커뮤니티를 찾아보세요.', onSubmitted: (value) {}),
+        SearchField(
+          hintText: '책 정보로 커뮤니티를 찾아보세요.',
+          onSubmitted: (value) {
+            if (value.trim().isEmpty) return;
+            context.push(
+              Uri(
+                path: '/community/search',
+                queryParameters: {'q': value.trim()},
+              ).toString(),
+            );
+          },
+        ),
         Expanded(
           child: _tab == 0
               ? SingleChildScrollView(

@@ -7,9 +7,12 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookListItem extends StatelessWidget {
-  const BookListItem({super.key, required this.book});
+  const BookListItem({super.key, required this.book, this.trailing});
 
   final Book book;
+
+  /// 기본 케밥 아이콘 대신 보여줄 위젯(예: 메뉴 버튼).
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -101,11 +104,12 @@ class BookListItem extends StatelessWidget {
             ],
           ),
 
-          SvgIcon(
-            name: 'kebab',
-            size: AppIconSizes.md,
-            color: AppColors.neutral40,
-          ),
+          trailing ??
+              SvgIcon(
+                name: 'kebab',
+                size: AppIconSizes.md,
+                color: AppColors.neutral40,
+              ),
         ],
       ),
     );
