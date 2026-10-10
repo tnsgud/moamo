@@ -2,6 +2,8 @@ import 'package:go_router/go_router.dart';
 import 'package:moamo/app/main_shell.dart';
 import 'package:moamo/features/auth/ui/login_screen.dart';
 import 'package:moamo/features/book_search/ui/book_search_screen.dart';
+import 'package:moamo/features/book_detail/ui/book_detail_screen.dart';
+import 'package:moamo/features/book_detail/ui/book_memo_screen.dart';
 import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
@@ -29,6 +31,17 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/book-search',
               builder: (context, state) => BookSearchScreen(),
+            ),
+            GoRoute(
+              path: '/book/:id',
+              builder: (context, state) =>
+                  BookDetailScreen(id: int.parse(state.pathParameters['id']!)),
+            ),
+            GoRoute(
+              path: '/book/:id/memo',
+              builder: (context, state) => BookMemoScreen(
+                bookId: int.parse(state.pathParameters['id']!),
+              ),
             ),
             GoRoute(
               path: '/bookcase/new',
