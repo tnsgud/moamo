@@ -6,7 +6,9 @@ import 'package:moamo/features/book_detail/ui/book_detail_screen.dart';
 import 'package:moamo/features/book_detail/ui/book_memo_screen.dart';
 import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
+import 'package:moamo/features/community/ui/book_board_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
+import 'package:moamo/features/community/ui/post_write_screen.dart';
 import 'package:moamo/features/bookcase_form/ui/bookcase_form_screen.dart';
 import 'package:moamo/features/guestbook/ui/guestbook_screen.dart';
 import 'package:moamo/features/library/ui/library_home_screen.dart';
@@ -63,6 +65,18 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/community',
               builder: (context, state) => CommunityMainScreen(),
+            ),
+            GoRoute(
+              path: '/community/book/:id',
+              builder: (context, state) => BookBoardScreen(
+                bookId: int.parse(state.pathParameters['id']!),
+              ),
+            ),
+            GoRoute(
+              path: '/community/book/:id/write',
+              builder: (context, state) => PostWriteScreen(
+                bookId: int.parse(state.pathParameters['id']!),
+              ),
             ),
           ],
         ),
