@@ -4,7 +4,13 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class CertificationTab extends StatelessWidget {
-  const CertificationTab({super.key});
+  const CertificationTab({
+    super.key,
+    this.isAiCertified = true,
+    this.isReviewCertified = false,
+  });
+
+  final bool isAiCertified, isReviewCertified;
 
   @override
   Widget build(BuildContext context) {
@@ -12,9 +18,13 @@ class CertificationTab extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: _MainCard(label: 'AI 카메라 인증', isCertified: true)),
+            Expanded(
+              child: _MainCard(label: 'AI 카메라 인증', isCertified: isAiCertified),
+            ),
             SizedBox(width: 8),
-            Expanded(child: _MainCard(label: '독후감 작성', isCertified: false)),
+            Expanded(
+              child: _MainCard(label: '독후감 작성', isCertified: isReviewCertified),
+            ),
           ],
         ),
         SizedBox(height: 12),
