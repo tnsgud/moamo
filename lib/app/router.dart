@@ -5,6 +5,7 @@ import 'package:moamo/features/book_search/ui/book_search_screen.dart';
 import 'package:moamo/features/book_detail/ui/book_detail_screen.dart';
 import 'package:moamo/features/book_detail/ui/book_memo_screen.dart';
 import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dart';
+import 'package:moamo/features/bookcase_list/ui/bookcase_list_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
 import 'package:moamo/features/community/ui/book_board_screen.dart';
 import 'package:moamo/features/community/ui/community_main_screen.dart';
@@ -30,6 +31,10 @@ final appRouter = GoRouter(
             GoRoute(
               path: '/library',
               builder: (context, state) => LibraryHomeScreen(),
+            ),
+            GoRoute(
+              path: '/bookcases',
+              builder: (context, state) => BookcaseListScreen(),
             ),
             GoRoute(
               path: '/book-search',
