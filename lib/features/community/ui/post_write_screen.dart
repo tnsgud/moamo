@@ -8,16 +8,24 @@ import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class PostWriteScreen extends StatefulWidget {
-  const PostWriteScreen({super.key, required this.bookId});
+  const PostWriteScreen({
+    super.key,
+    this.title = '게시물',
+    this.categories = const ['책 후기', '질문', '의견토론'],
+    this.saveIcon = 'success',
+  });
 
-  final int bookId;
+  final String title;
+  final List<String> categories;
+  final String saveIcon;
 
   @override
   State<PostWriteScreen> createState() => _PostWriteScreenState();
 }
 
 class _PostWriteScreenState extends State<PostWriteScreen> {
-  static const _categories = ['책 후기', '질문', '의견토론'];
+  List<String> get _categories => widget.categories;
+
   static const _rules = [
     '모아모는 누구나 사용할 수 있어요.',
     '욕설은 금지에요.',
@@ -68,13 +76,13 @@ class _PostWriteScreenState extends State<PostWriteScreen> {
             child: SvgIcon(name: 'back', size: AppIconSizes.lg),
           ),
           title: Text(
-            '게시물',
+            widget.title,
             style: AppTextStyles.h3.copyWith(color: AppColors.neutral90),
           ),
           actions: [
             GestureDetector(
               onTap: _save,
-              child: SvgIcon(name: 'success', size: AppIconSizes.lg),
+              child: SvgIcon(name: widget.saveIcon, size: AppIconSizes.lg),
             ),
           ],
         ),

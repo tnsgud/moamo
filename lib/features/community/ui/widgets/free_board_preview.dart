@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moamo/features/community/model/community_post.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -20,14 +21,17 @@ class FreeBoardPreview extends StatelessWidget {
       children: [
         SectionTitle(
           '자유게시판',
-          trailing: Row(
-            children: [
-              Text(
-                '전체 보기',
-                style: AppTextStyles.body1.copyWith(color: AppColors.neutral),
-              ),
-              SvgIcon(name: 'next', size: AppIconSizes.sm),
-            ],
+          trailing: GestureDetector(
+            onTap: () => context.push('/community/free'),
+            child: Row(
+              children: [
+                Text(
+                  '전체 보기',
+                  style: AppTextStyles.body1.copyWith(color: AppColors.neutral),
+                ),
+                SvgIcon(name: 'next', size: AppIconSizes.sm),
+              ],
+            ),
           ),
         ),
         SizedBox(height: 16),
