@@ -44,7 +44,14 @@ class LibraryHomeScreen extends StatelessWidget {
             SizedBox(height: 20),
           ],
         ),
-        Positioned(right: 0, bottom: 10, child: LibraryFab()),
+        Positioned(
+          right: 0,
+          bottom: 10,
+          child: GestureDetector(
+            onTap: () => context.push('/guestbook'),
+            child: LibraryFab(),
+          ),
+        ),
       ],
     );
   }
