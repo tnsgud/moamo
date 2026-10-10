@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:moamo/shared/widget/app_chip.dart';
 
-class CategoryChipList extends StatelessWidget {
-  const CategoryChipList({super.key, required this.data});
+class AppChipList extends StatelessWidget {
+  const AppChipList({super.key, required this.data});
 
   final List<String> data;
 

@@ -4,7 +4,7 @@ import 'package:moamo/features/book_search/ui/widgets/book_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_search_app_bar.dart';
 import 'package:moamo/shared/widget/book_info_tile.dart';
 import 'package:moamo/shared/widget/search_field.dart';
-import 'package:moamo/features/book_search/ui/widgets/category_chip_list.dart';
+import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/recent_search_history.dart';
 import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -93,7 +93,7 @@ class _BookSearchScreenState extends State<BookSearchScreen> {
           SizedBox(height: 24),
           RecentSearchHistory(data: ['해리포터', '오디세이', '후지이 카제', '식케이', '디오니소스']),
           SizedBox(height: 24),
-          CategoryChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
+          AppChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
           SizedBox(height: 32),
           BookList(
             title: title,
