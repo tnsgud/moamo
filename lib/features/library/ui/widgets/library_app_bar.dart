@@ -18,7 +18,10 @@ class LibraryAppBar extends StatelessWidget {
         style: AppTextStyles.h3.copyWith(color: AppColors.neutral90),
       ),
       actions: [
-        SvgIcon(name: 'bookcase', size: AppIconSizes.lg),
+        GestureDetector(
+          onTap: () => context.push('/bookcases'),
+          child: SvgIcon(name: 'bookcase', size: AppIconSizes.lg),
+        ),
         SizedBox(width: 10),
         GestureDetector(
           onTap: () => context.push('/book-search'),
