@@ -12,6 +12,7 @@ class DrawMascot extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
+      width: double.infinity,
       height: 100,
       child: Stack(
         alignment: Alignment.bottomCenter,
