@@ -2,6 +2,16 @@
 
 A new Flutter project.
 
+## Setup
+
+`lib/shared/api/`는 git에 올리지 않는 생성 코드입니다. 클론 후, 그리고 `openapi.json`이 바뀔 때마다 생성하세요.
+
+```bash
+flutter pub get
+dart run swagger_parser
+dart run build_runner build --delete-conflicting-outputs
+```
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
