@@ -2,7 +2,7 @@
   "openapi": "3.0.1",
   "info": {
     "title": "독서 서비스 REST API",
-    "description": "카카오 로그인과 닉네임 가입, 공공 도서 검색, 회원별 책장과 글·사진 메모, 방명록, 최근 검색어를 제공하는 API입니다.\n\n### 로그인과 가입\n1. 앱에서 카카오 SDK로 로그인하고 받은 액세스 토큰을 `POST /api/auth/kakao`의 JSON 본문 `kakaoAccessToken`으로 전송합니다.\n2. 서버가 카카오에서 토큰의 유효기간과 사용자 ID를 확인합니다. 공통 응답의 `success`를 확인하고 `data.status`로 분기합니다.\n3. `LOGIN_SUCCESS`이면 `data.accessToken`으로 일반 API를 사용합니다.\n4. `SIGNUP_REQUIRED`이면 닉네임 화면을 표시하고 `data.signupToken`으로 `POST /api/auth/signup`을 호출합니다.\n5. 가입 완료 후 받은 `data.accessToken`으로 교체합니다. 가입 전에는 회원이 저장되지 않습니다.\n\n**Authorize에는 토큰 값만 입력합니다.** Swagger가 `Authorization: Bearer \u003C토큰\u003E`을 붙입니다.\n`signupToken`은 가입 전용이고 나머지 API에는 `accessToken`이 필요합니다.\n기본 유효기간은 액세스 토큰 15분, 가입 토큰 5분이며 서버 설정에 따라 달라집니다.\n리프레시 토큰은 구현하지 않았으며 만료 후에는 카카오 로그인을 다시 진행합니다.\n카카오 로그인 API는 서비스 JWT 없이 호출하며 카카오 토큰은 본문에만 넣습니다. 카카오 ID를 요청 본문으로 받아 인증하지 않습니다.\n서비스 member.memberId는 UUID, member.providerId는 서버가 카카오에서 조회한 회원번호입니다.\n\n### 책장 사용 흐름\n- `GET /api/books`의 결과는 **ISBN으로 식별**하며 검색·인기·추천 조회만으로 책 정보를 저장하지 않습니다.\n- `POST /api/bookshelf`에서 이름·템플릿·색상·아이템을 저장하며 빈 책장을 생성하고 책장 `id`를 보관합니다.\n- 생성 직후 책 수는 0입니다. 이름만 보내면 기본 설정으로 생성합니다.\n- `POST /api/bookshelf/{bookshelfId}/books`에 검색 결과의 `isbn`을 보내 책을 추가합니다.\n- 이때만 책 정보를 저장하고, 같은 ISBN은 기존 책 UUID를 여러 회원·책장에서 재사용합니다.\n- 같은 책장에 동일 ISBN의 책을 다시 추가하면 409입니다. 다른 책장에는 같은 책을 추가할 수 있습니다.\n- `GET /api/bookshelf`는 책장 목록, `GET /api/bookshelf/{bookshelfId}/books`는 선택한 책장 안의 책 목록입니다.\n- **회원 ID·책장 ID·개별 책 ID·공유 도서 정보 ID·검색 이력 ID는 서로 다릅니다.** 책장 책 응답의 `id`는 회원의 개별 책 UUID이고 `book.id`는 공유 도서 정보 UUID입니다.\n- 메모는 개별 책에 연결합니다. 경로의 `bookId`는 `book.id`이며 `bookshelfId`와 함께 개별 책을 식별합니다.\n\n### 책장 꾸미기\n- 처음 `POST /api/bookshelf`에서 이름·템플릿·색상·아이템을 저장합니다. 생성 요청은 책을 받지 않습니다.\n- `PUT /api/bookshelf/{bookshelfId}/decoration`으로 이름·템플릿 키·표지 색상·미리보기 배치를 함께 저장합니다.\n- 생성된 책장에 책을 추가한 뒤 미리보기 수정의 `books`에서 책 UUID(`bookId`)를 사용합니다.\n- `GET`으로 같은 경로를 조회해 화면을 복원합니다. 책 제목·저자·표지 URL을 함께 반환합니다.\n- 책은 해당 책장에 담긴 것 중 최대 3권, 꾸미기 아이템은 최대 3개를 선택합니다.\n- 모든 책·아이템의 `slot`은 0~5이고 중복할 수 없습니다. 책 표시 방식은 `FRONT`·`SPINE`입니다.\n- 템플릿·아이템 키는 프런트의 자산 식별값이고 색상은 `#RRGGBB`입니다.\n- 기본값은 `DEFAULT` 템플릿·`#D9DBFF` 색상·빈 미리보기입니다.\n- 책장 목록에도 저장한 템플릿과 색상을 반환합니다. 책 삭제 시 해당 책의 미리보기 배치도 제거합니다.\n\n### 책 상세와 메모\n- `GET /api/bookshelf/{bookshelfId}/books/{bookId}`로 내 책장 안의 책 상세를 조회합니다.\n- `GET /api/bookshelf/{bookshelfId}/books/{bookId}/memos`로 해당 책장에 담긴 개별 책의 내 메모를 조회하고 같은 경로에 multipart/form-data로 작성합니다.\n- 회원은 JWT에서 확인하며 내 책장 소유권과 해당 책장에 담긴 개별 책을 확인합니다. 다른 회원·다른 책장에 담긴 같은 도서는 메모를 각각 관리합니다.\n- 비공개 글 체크 시 `visibility=PRIVATE`, 해제 시 `PUBLIC`을 보냅니다. 생성 시 생략·기존 메모의 빈 값은 PRIVATE입니다.\n- 내 메모 목록에는 PUBLIC·PRIVATE를 모두 반환합니다. `GET /api/books/{bookId}/memos/public`은 여러 회원의 공개 메모만 최신순 페이지로 반환합니다.\n- PRIVATE 글·사진은 작성자만 조회합니다. 다른 회원이 상세·사진에 접근하면 `403`과 `code=PRIVATE_MEMO`, `data.visibility=PRIVATE`를 반환합니다.\n- PUBLIC 글·사진은 다른 로그인 회원도 조회하지만 수정·삭제는 작성자만 가능합니다. 수정에서 visibility를 생략하면 기존 범위를 유지합니다.\n- 글·사진 중 하나는 필수이며 메모당 사진 1장, JPEG·PNG 최대 5MiB 및 2,000만 화소를 허용합니다.\n- 메모 UUID는 응답의 `id`입니다. `PUT .../memos/{memoId}`로 수정하고 `DELETE`로 삭제합니다.\n- 사진 `imageUrl`은 JWT가 필요한 API 상대 경로입니다. Bearer 헤더를 포함한 fetch로 Blob을 받아 표시합니다.\n- 메모·사진은 책장에 담긴 개별 책 UUID에 연결합니다. 같은 ISBN이라도 회원·책장마다 메모가 다릅니다.\n- 책장 안의 개별 책을 삭제하면 해당 책의 메모·사진도 삭제합니다. 다른 책장·다른 회원의 개별 책과 메모는 유지합니다. 책장 삭제도 같은 규칙입니다.\n- 메모 응답의 bookshelfBookId는 책장 책 응답의 id입니다. bookshelfId·bookId·id(메모 UUID)로 상세를 조회하며 사진 경로는 /api/bookshelf/{bookshelfId}/books/{bookId}/memos/{memoId}/image입니다.\n\n### 회원별 방명록\n- 모든 회원은 별도 생성 없이 `/api/members/{memberId}/guestbook`으로 방명록을 조회합니다.\n- 로그인한 회원은 서로의 방명록을 조회하고 글·스티커를 작성할 수 있습니다. 내 방명록은 `/api/auth/me`의 `memberId`를 사용합니다.\n- 목록은 주인 닉네임·전체 글 수·메뉴 권한과 최신순 페이지를 반환합니다. 기본 20개, 최대 100개입니다.\n- 글 또는 스티커 중 하나는 필요합니다. 글 최대 1,000자, 스티커 자산 키 최대 10개입니다.\n- `ownerEntry`로 주인 말풍선을, `canEdit`·`canDelete`로 수정·삭제 메뉴를 구분합니다.\n- 작성자만 수정할 수 있고 작성자 또는 방명록 주인이 삭제할 수 있습니다.\n- 주인은 `unread`·`unreadEntries`로 새 글을 표시하고 `POST .../guestbook/read`에 화면에 표시한 글 ID를 보내 읽음 처리합니다.\n- 스티커는 프런트의 자산 키만 저장하며 작성자 카카오 계정 정보는 공개하지 않습니다.\n\n### 응답과 외부 제공처\n응답의 생성·검색·추가 시각은 UTC ISO-8601이며 `publicationDate`는 제공처의 예정일·발행연도 문자열 원문입니다.\n목록이 없으면 `[]`, 검색 페이지는 `books: []`, 방명록 페이지는 `entries: []`를 반환합니다. 표지 등 외부 정보가 없으면 `null`입니다.\n도서 표지는 이미지 파일이 아닌 URL을 반환·저장합니다. 정보나루 표지는 비영리 화면 표시용 이용 조건을 따릅니다.\n사용자가 메모에 첨부한 사진은 DB에 저장하고 메모의 공개 범위에 따라 JWT로 조회합니다.\n예시의 토큰·UUID·도서 정보·이미지 URL은 형식을 보여 주는 값이므로 실제 응답값으로 바꿔 사용합니다.\n도서 제공처 인증키는 서버 환경변수로 설정하며, 필요한 키가 없으면 503·외부 호출 실패는 502입니다.\n모든 JSON 응답은 `application/json`이며 `success`, `code`, `message`, `data` 공통 래퍼를 사용합니다.\n성공은 `success=true`, `code=OK`이며 기존 DTO·배열·페이지는 `data`에서 꺼냅니다. 아래 필드 설명의 ID·목록·토큰도 data 내부 값입니다.\n실패는 `success=false`와 오류 코드·안내 메시지를 반환하며 추가 정보가 없으면 `data=null`입니다. 비공개 접근은 data.visibility=PRIVATE입니다.\nJWT 보안 필터의 401·403, 카카오 토큰 인증 성공·실패, 입력 검증·서비스·서버 오류도 같은 래퍼입니다. HTTP 상태 코드는 유지합니다.\n`204` 삭제·읽음 처리에는 본문이 없습니다. 사진 바이너리는 래퍼 없이 유지합니다.\nOpenAPI 문서 JSON 자체는 래핑하지 않습니다. 요청 DTO와 multipart 폼에도 래퍼를 붙이지 않습니다.\n",
+    "description": "카카오 로그인과 닉네임 가입, 공공 도서 검색, 회원별 책장과 글·사진 메모, 방명록, 최근 검색어를 제공하는 API입니다.\n\n### 로그인과 가입\n1. 앱에서 카카오 SDK로 로그인하고 받은 액세스 토큰을 `POST /api/auth/kakao`의 JSON 본문 `kakaoAccessToken`으로 전송합니다.\n2. 서버가 카카오에서 토큰의 유효기간과 사용자 ID를 확인합니다. 공통 응답의 `success`를 확인하고 `data.status`로 분기합니다.\n3. `LOGIN_SUCCESS`이면 `data.accessToken`으로 일반 API를 사용합니다.\n4. `SIGNUP_REQUIRED`이면 닉네임 화면을 표시하고 `data.signupToken`으로 `POST /api/auth/signup`을 호출합니다.\n5. 가입 완료 후 받은 `data.accessToken`으로 교체합니다. 가입 전에는 회원이 저장되지 않습니다.\n\n**Authorize에는 토큰 값만 입력합니다.** Swagger가 `Authorization: Bearer <토큰>`을 붙입니다.\n`signupToken`은 가입 전용이고 나머지 API에는 `accessToken`이 필요합니다.\n기본 유효기간은 액세스 토큰 15분, 가입 토큰 5분이며 서버 설정에 따라 달라집니다.\n리프레시 토큰은 구현하지 않았으며 만료 후에는 카카오 로그인을 다시 진행합니다.\n카카오 로그인 API는 서비스 JWT 없이 호출하며 카카오 토큰은 본문에만 넣습니다. 카카오 ID를 요청 본문으로 받아 인증하지 않습니다.\n서비스 member.memberId는 UUID, member.providerId는 서버가 카카오에서 조회한 회원번호입니다.\n\n### 책장 사용 흐름\n- `GET /api/books`의 결과는 **ISBN으로 식별**하며 검색·인기·추천 조회만으로 책 정보를 저장하지 않습니다.\n- `POST /api/bookshelf`에서 이름·템플릿·색상·아이템을 저장하며 빈 책장을 생성하고 책장 `id`를 보관합니다.\n- 생성 직후 책 수는 0입니다. 이름만 보내면 기본 설정으로 생성합니다.\n- `POST /api/bookshelf/{bookshelfId}/books`에 검색 결과의 `isbn`을 보내 책을 추가합니다.\n- 이때만 책 정보를 저장하고, 같은 ISBN은 기존 책 UUID를 여러 회원·책장에서 재사용합니다.\n- 같은 책장에 동일 ISBN의 책을 다시 추가하면 409입니다. 다른 책장에는 같은 책을 추가할 수 있습니다.\n- `GET /api/bookshelf`는 책장 목록, `GET /api/bookshelf/{bookshelfId}/books`는 선택한 책장 안의 책 목록입니다.\n- **회원 ID·책장 ID·개별 책 ID·공유 도서 정보 ID·검색 이력 ID는 서로 다릅니다.** 책장 책 응답의 `id`는 회원의 개별 책 UUID이고 `book.id`는 공유 도서 정보 UUID입니다.\n- 메모는 개별 책에 연결합니다. 경로의 `bookId`는 `book.id`이며 `bookshelfId`와 함께 개별 책을 식별합니다.\n\n### 책장 꾸미기\n- 처음 `POST /api/bookshelf`에서 이름·템플릿·색상·아이템을 저장합니다. 생성 요청은 책을 받지 않습니다.\n- `PUT /api/bookshelf/{bookshelfId}/decoration`으로 이름·템플릿 키·표지 색상·미리보기 배치를 함께 저장합니다.\n- 생성된 책장에 책을 추가한 뒤 미리보기 수정의 `books`에서 책 UUID(`bookId`)를 사용합니다.\n- `GET`으로 같은 경로를 조회해 화면을 복원합니다. 책 제목·저자·표지 URL을 함께 반환합니다.\n- 책은 해당 책장에 담긴 것 중 최대 3권, 꾸미기 아이템은 최대 3개를 선택합니다.\n- 모든 책·아이템의 `slot`은 0~5이고 중복할 수 없습니다. 책 표시 방식은 `FRONT`·`SPINE`입니다.\n- 템플릿·아이템 키는 프런트의 자산 식별값이고 색상은 `#RRGGBB`입니다.\n- 기본값은 `DEFAULT` 템플릿·`#D9DBFF` 색상·빈 미리보기입니다.\n- 책장 목록에도 저장한 템플릿과 색상을 반환합니다. 책 삭제 시 해당 책의 미리보기 배치도 제거합니다.\n\n### 책 상세와 메모\n- `GET /api/bookshelf/{bookshelfId}/books/{bookId}`로 내 책장 안의 책 상세를 조회합니다.\n- `GET /api/bookshelf/{bookshelfId}/books/{bookId}/memos`로 해당 책장에 담긴 개별 책의 내 메모를 조회하고 같은 경로에 multipart/form-data로 작성합니다.\n- 회원은 JWT에서 확인하며 내 책장 소유권과 해당 책장에 담긴 개별 책을 확인합니다. 다른 회원·다른 책장에 담긴 같은 도서는 메모를 각각 관리합니다.\n- 비공개 글 체크 시 `visibility=PRIVATE`, 해제 시 `PUBLIC`을 보냅니다. 생성 시 생략·기존 메모의 빈 값은 PRIVATE입니다.\n- 내 메모 목록에는 PUBLIC·PRIVATE를 모두 반환합니다. `GET /api/books/{bookId}/memos/public`은 여러 회원의 공개 메모만 최신순 페이지로 반환합니다.\n- PRIVATE 글·사진은 작성자만 조회합니다. 다른 회원이 상세·사진에 접근하면 `403`과 `code=PRIVATE_MEMO`, `data.visibility=PRIVATE`를 반환합니다.\n- PUBLIC 글·사진은 다른 로그인 회원도 조회하지만 수정·삭제는 작성자만 가능합니다. 수정에서 visibility를 생략하면 기존 범위를 유지합니다.\n- 글·사진 중 하나는 필수이며 메모당 사진 1장, JPEG·PNG 최대 5MiB 및 2,000만 화소를 허용합니다.\n- 메모 UUID는 응답의 `id`입니다. `PUT .../memos/{memoId}`로 수정하고 `DELETE`로 삭제합니다.\n- 사진 `imageUrl`은 JWT가 필요한 API 상대 경로입니다. Bearer 헤더를 포함한 fetch로 Blob을 받아 표시합니다.\n- 메모·사진은 책장에 담긴 개별 책 UUID에 연결합니다. 같은 ISBN이라도 회원·책장마다 메모가 다릅니다.\n- 책장 안의 개별 책을 삭제하면 해당 책의 메모·사진도 삭제합니다. 다른 책장·다른 회원의 개별 책과 메모는 유지합니다. 책장 삭제도 같은 규칙입니다.\n- 메모 응답의 bookshelfBookId는 책장 책 응답의 id입니다. bookshelfId·bookId·id(메모 UUID)로 상세를 조회하며 사진 경로는 /api/bookshelf/{bookshelfId}/books/{bookId}/memos/{memoId}/image입니다.\n\n### 회원별 방명록\n- 모든 회원은 별도 생성 없이 `/api/members/{memberId}/guestbook`으로 방명록을 조회합니다.\n- 로그인한 회원은 서로의 방명록을 조회하고 글·스티커를 작성할 수 있습니다. 내 방명록은 `/api/auth/me`의 `memberId`를 사용합니다.\n- 목록은 주인 닉네임·전체 글 수·메뉴 권한과 최신순 페이지를 반환합니다. 기본 20개, 최대 100개입니다.\n- 글 또는 스티커 중 하나는 필요합니다. 글 최대 1,000자, 스티커 자산 키 최대 10개입니다.\n- `ownerEntry`로 주인 말풍선을, `canEdit`·`canDelete`로 수정·삭제 메뉴를 구분합니다.\n- 작성자만 수정할 수 있고 작성자 또는 방명록 주인이 삭제할 수 있습니다.\n- 주인은 `unread`·`unreadEntries`로 새 글을 표시하고 `POST .../guestbook/read`에 화면에 표시한 글 ID를 보내 읽음 처리합니다.\n- 스티커는 프런트의 자산 키만 저장하며 작성자 카카오 계정 정보는 공개하지 않습니다.\n\n### 응답과 외부 제공처\n응답의 생성·검색·추가 시각은 UTC ISO-8601이며 `publicationDate`는 제공처의 예정일·발행연도 문자열 원문입니다.\n목록이 없으면 `[]`, 검색 페이지는 `books: []`, 방명록 페이지는 `entries: []`를 반환합니다. 표지 등 외부 정보가 없으면 `null`입니다.\n도서 표지는 이미지 파일이 아닌 URL을 반환·저장합니다. 정보나루 표지는 비영리 화면 표시용 이용 조건을 따릅니다.\n사용자가 메모에 첨부한 사진은 DB에 저장하고 메모의 공개 범위에 따라 JWT로 조회합니다.\n예시의 토큰·UUID·도서 정보·이미지 URL은 형식을 보여 주는 값이므로 실제 응답값으로 바꿔 사용합니다.\n도서 제공처 인증키는 서버 환경변수로 설정하며, 필요한 키가 없으면 503·외부 호출 실패는 502입니다.\n모든 JSON 응답은 `application/json`이며 `success`, `code`, `message`, `data` 공통 래퍼를 사용합니다.\n성공은 `success=true`, `code=OK`이며 기존 DTO·배열·페이지는 `data`에서 꺼냅니다. 아래 필드 설명의 ID·목록·토큰도 data 내부 값입니다.\n실패는 `success=false`와 오류 코드·안내 메시지를 반환하며 추가 정보가 없으면 `data=null`입니다. 비공개 접근은 data.visibility=PRIVATE입니다.\nJWT 보안 필터의 401·403, 카카오 토큰 인증 성공·실패, 입력 검증·서비스·서버 오류도 같은 래퍼입니다. HTTP 상태 코드는 유지합니다.\n`204` 삭제·읽음 처리에는 본문이 없습니다. 사진 바이너리는 래퍼 없이 유지합니다.\nOpenAPI 문서 JSON 자체는 래핑하지 않습니다. 요청 DTO와 multipart 폼에도 래퍼를 붙이지 않습니다.\n",
     "version": "0.0.1-SNAPSHOT"
   },
   "servers": [
@@ -14,34 +14,34 @@
   "security": [{ "accessToken": [] }],
   "tags": [
     {
-      "name": "bookshelf",
-      "description": "회원 → 이름 있는 책장 → 책장에 담긴 책 구조입니다. 내 책장에만 접근하고, 책 정보는 책을 추가할 때 저장합니다."
-    },
-    {
-      "name": "최근 검색어",
+      "name": "BookSearchHistory",
       "description": "로그인한 회원별 최근 검색어를 최대 10개 관리합니다. 책 정보 저장과 별개의 기능입니다."
     },
     {
-      "name": "방명록",
+      "name": "Bookshelf",
+      "description": "회원 → 이름 있는 책장 → 책장에 담긴 책 구조입니다. 내 책장에만 접근하고, 책 정보는 책을 추가할 때 저장합니다."
+    },
+    {
+      "name": "Books",
+      "description": "외부 도서 검색·인기·추천은 DB에 저장하지 않습니다. 검색 결과는 ISBN으로 식별하고 책장에 추가할 때 내부 책 ID를 발급합니다."
+    },
+    {
+      "name": "Guestbook",
       "description": "모든 회원에게 하나의 방명록이 있습니다. 로그인한 회원은 서로의 방명록에 글·스티커를 남길 수 있습니다. memberId는 방명록 주인 회원 UUID이며 내 방명록은 /api/auth/me의 memberId를 사용합니다."
     },
     {
-      "name": "auth",
-      "description": "카카오 인증 결과의 status로 로그인과 닉네임 가입을 구분합니다. 가입 토큰과 액세스 토큰은 용도가 다릅니다."
-    },
-    {
-      "name": "책 메모",
+      "name": "BookMemo",
       "description": "회원의 책장에 담긴 개별 책마다 글·사진·페이지와 공개 범위를 저장합니다. 같은 도서도 회원·책장별로 메모를 분리합니다. PRIVATE는 작성자만, PUBLIC은 다른 로그인 회원도 조회하며 수정·삭제는 작성자만 가능합니다. bookshelfId는 책장 UUID이며 bookId는 해당 책장 안의 book.id UUID입니다."
     },
     {
-      "name": "도서",
-      "description": "외부 도서 검색·인기·추천은 DB에 저장하지 않습니다. 검색 결과는 ISBN으로 식별하고 책장에 추가할 때 내부 책 ID를 발급합니다."
+      "name": "Auth",
+      "description": "카카오 인증 결과의 status로 로그인과 닉네임 가입을 구분합니다. 가입 토큰과 액세스 토큰은 용도가 다릅니다."
     }
   ],
   "paths": {
     "/api/members/{memberId}/guestbook/{entryId}": {
       "get": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "방명록 글 상세 조회",
         "description": "해당 회원 방명록의 글 한 개를 조회합니다. 수정 화면에서 사용할 수 있으며 읽음 상태는 변경하지 않습니다.",
         "operationId": "getGuestbookEntry",
@@ -99,7 +99,7 @@
         }
       },
       "put": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "내가 작성한 방명록 글·스티커 수정",
         "description": "작성자 본인만 수정할 수 있습니다. 방명록 주인도 방문자 글은 수정할 수 없습니다. 최종 content·stickerKeys를 전송하며 생략한 글·스티커는 비웁니다. 수정 후에도 글 또는 스티커가 필요하며 글 ID·createdAt·읽음 상태를 유지합니다.",
         "operationId": "updateGuestbookEntry",
@@ -120,9 +120,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuestbookEntryRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/GuestbookEntryRequest" }
             }
           },
           "required": true
@@ -167,7 +165,7 @@
         }
       },
       "delete": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "방명록 글 삭제",
         "description": "작성자 본인은 자신의 글을, 방명록 주인은 자신의 방명록에 남겨진 모든 글을 삭제할 수 있습니다. 다른 방문자는 삭제할 수 없습니다. 연결된 스티커도 함께 삭제합니다.",
         "operationId": "deleteGuestbookEntry",
@@ -197,7 +195,7 @@
     },
     "/api/bookshelf/{bookshelfId}/decoration": {
       "get": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "책장 꾸미기 설정과 미리보기 조회",
         "description": "저장된 책장 이름·템플릿 키·책 표지/책등 색상·미리보기 책·꾸미기 아이템을 반환합니다.\n생성 또는 수정할 때 저장한 설정을 반환합니다. 생성 직후 books는 빈 배열이며 items는 생성 시 선택한 배치입니다.\n생성 시 설정을 생략했으면 DEFAULT·#D9DBFF·빈 items입니다.\n이전 책장의 설정 컬럼이 null이면 같은 기본값을 적용합니다.\nbooks에는 선택한 책의 제목·저자·표지 URL과 FRONT/SPINE 표시 방식이 포함됩니다.\nbooks·items는 각각 slot 오름차순입니다. 프런트는 두 배열을 slot으로 합쳐 미리보기를 복원합니다.\n위치는 0~5이며 비어 있는 위치는 빈 슬롯으로 표시합니다. 미리보기 선택 책은 최대 3권, 아이템은 최대 3개입니다.\n템플릿과 아이템 이미지는 프런트의 templateKey·itemKey 대응 자산으로 표시합니다.\n내 책장만 조회할 수 있으며 외부 도서 API를 호출하지 않습니다.\n",
         "operationId": "getMyBookshelfDecoration",
@@ -251,7 +249,7 @@
         }
       },
       "put": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "책장 꾸미기 저장 (이름·템플릿·색상·미리보기 전체 교체)",
         "description": "화면의 '책장 저장하기'에서 선택한 설정을 한 번에 저장합니다. 책장 이름도 함께 수정합니다.\nname은 앞뒤 공백 제거 후 1~50자, templateKey는 대문자 영문·숫자·밑줄 키, coverColor는 #RRGGBB입니다.\n템플릿·아이템 키와 색상은 앞뒤 공백 제거 및 대문자 정규화 후 저장합니다.\nbooks에는 해당 책장에 이미 담긴 book.id를 최대 3개 전송합니다. 다른 책장에만 담긴 책은 선택할 수 없습니다.\n각 책의 displayType은 FRONT(앞표지)·SPINE(책등)이며 생략 시 SPINE입니다. items는 최대 3개입니다.\n모든 책·아이템의 slot은 0~5이고 서로 중복할 수 없습니다. 같은 책을 미리보기에 반복 선택하면 400입니다.\n같은 꾸미기 아이템은 서로 다른 위치에 반복 배치할 수 있습니다.\nbooks·items 생략, null, 빈 배열은 해당 미리보기 선택을 비웁니다. 책장에 담긴 실제 책과 메모는 삭제하지 않습니다.\n설정과 이름을 한 트랜잭션에서 저장하므로 일부만 반영되지 않습니다. 반복 저장은 기존 설정을 교체합니다.\n템플릿·아이템은 프런트 자산의 식별 키를 저장하며 이미지 파일을 업로드하는 API가 아닙니다.\n",
         "operationId": "saveMyBookshelfDecoration",
@@ -347,7 +345,7 @@
     },
     "/api/bookshelf/{bookshelfId}/books/{bookId}/memos/{memoId}": {
       "get": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "내 메모 또는 공개 메모 상세 조회",
         "description": "작성자는 공개 여부와 관계없이 조회합니다. 다른 로그인 회원은 PUBLIC만 조회할 수 있습니다. 다른 회원의 PRIVATE 메모는 403 공통 JSON 응답과 code=PRIVATE_MEMO·data.visibility=PRIVATE를 반환하며 내용·사진 URL은 반환하지 않습니다. 다른 책장 또는 다른 책의 메모 UUID를 넣으면 404입니다. 사진은 별도 imageUrl에서 조회합니다.",
         "operationId": "getMyBookMemo",
@@ -398,9 +396,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookMemoResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookMemoResponse" }
                   }
                 }
               }
@@ -413,7 +409,7 @@
         }
       },
       "put": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "메모 글·페이지 수정과 사진 교체·삭제",
         "description": "multipart/form-data로 content와 page의 최종 값을 보냅니다. 생략하면 기존 글·페이지 번호를 지웁니다.\nPUBLIC 메모도 수정은 작성자만 가능합니다. visibility를 생략하면 기존 공개 범위를 유지합니다.\nvisibility=PRIVATE/PUBLIC으로 공개 범위를 변경하며 첨부 사진도 같은 범위를 적용합니다.\n비공개로 전환하면 공개 목록에서 제외하고 다른 회원의 상세·사진 조회는 403 PRIVATE_MEMO로 처리합니다.\nimage를 생략하면 기존 사진을 유지하고, 새 파일을 보내면 기존 사진을 교체합니다.\n사진만 지우려면 removeImage=true를 보냅니다. image와 removeImage=true를 함께 보내면 400입니다.\n변경 후 글과 사진이 모두 없으면 400이며 기존 메모와 사진은 유지합니다.\n글·사진 제한은 생성 API와 같습니다. 메모 UUID와 createdAt은 유지하고 updatedAt을 갱신합니다.\n사진 교체·삭제와 메모 수정은 같은 트랜잭션으로 처리합니다. 파일 필드에 기존 imageUrl을 보내는 방식이 아닙니다.\n",
         "operationId": "updateMyBookMemo",
@@ -472,9 +468,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookMemoResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookMemoResponse" }
                   }
                 }
               }
@@ -490,7 +484,7 @@
         }
       },
       "delete": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "내 메모와 첨부 사진 삭제",
         "description": "선택한 메모와 첨부 사진을 함께 삭제합니다. 책장 안의 책과 다른 메모는 유지합니다. 공개 메모도 작성자만 삭제할 수 있습니다. 해당 책장·책에 속하지 않거나 이미 삭제한 메모는 404입니다. 프런트에서 삭제 확인을 받은 뒤 호출합니다.",
         "operationId": "deleteMyBookMemo",
@@ -528,7 +522,7 @@
     },
     "/api/members/{memberId}/guestbook": {
       "get": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "회원 방명록 목록·글 수 조회",
         "description": "별도 방명록 생성 없이 가입된 회원의 UUID로 조회합니다. 다른 회원의 방명록도 로그인 후 조회할 수 있습니다.\n주인 닉네임·전체 글 수·글 목록과 메뉴 권한을 반환합니다. 글이 없으면 totalEntries=0, entries=[]입니다.\npage는 0부터 시작하고 size는 기본 20, 최대 100입니다. 글은 작성 시각 최신순이고 수정해도 순서를 유지합니다.\n채팅형 화면에서는 현재 페이지를 역순으로 표시하고, 다음 페이지의 오래된 글을 위에 붙입니다.\nownerEntry=true인 글을 주인 말풍선 색상으로 표시하고 authorMemberId로 작성자 프로필을 연결합니다.\nunread·unreadEntries는 주인에게만 제공합니다. 조회만으로 읽음 처리하지 않습니다.\n",
         "operationId": "getMemberGuestbook",
@@ -583,9 +577,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/GuestbookResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/GuestbookResponse" }
                   }
                 }
               }
@@ -599,7 +591,7 @@
         }
       },
       "post": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "회원 방명록에 글·스티커 작성",
         "description": "작성자는 액세스 JWT에서 확인하며 요청 본문으로 회원 ID·닉네임을 받지 않습니다. 내 방명록에도 글을 남길 수 있습니다. 글만·스티커만·글과 스티커 모두 가능하며 모두 비면 400입니다. 글은 최대 1,000자, 스티커는 최대 10개이며 스티커 자산 키만 저장합니다. 주인이 작성한 글은 새 글 수에 포함하지 않습니다.",
         "operationId": "createGuestbookEntry",
@@ -614,9 +606,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuestbookEntryRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/GuestbookEntryRequest" }
             }
           },
           "required": true
@@ -663,7 +653,7 @@
     },
     "/api/members/{memberId}/guestbook/read": {
       "post": {
-        "tags": ["방명록"],
+        "tags": ["Guestbook"],
         "summary": "내 방명록에 표시된 글 읽음 처리",
         "description": "주인만 호출할 수 있습니다. 화면에 표시한 글 ID를 1~100개 보내면 해당 글의 새 글 표시를 지웁니다. 이미 읽은 글·삭제된 글·다른 방명록의 글은 무시하므로 반복 호출할 수 있습니다. 목록 조회 뒤 새로 도착한 다른 글은 읽지 않은 상태를 유지합니다.",
         "operationId": "markGuestbookEntriesRead",
@@ -678,9 +668,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GuestbookReadRequest"
-              }
+              "schema": { "$ref": "#/components/schemas/GuestbookReadRequest" }
             }
           },
           "required": true
@@ -697,7 +685,7 @@
     },
     "/api/bookshelf": {
       "get": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "내 책장 목록 조회",
         "description": "로그인한 회원이 소유한 책장을 생성 시각 최신순으로 반환합니다. 책장별 id·이름·현재 책 수·생성 시각·템플릿 키·표지 색상이 포함됩니다. 책장이 없으면 빈 배열이며 자동으로 책장을 만들지 않습니다. 저장한 미리보기 책과 아이템은 /{bookshelfId}/decoration에서 조회합니다. 이 응답은 책장 목록이고 각 책장 안의 책 목록은 별도 /{bookshelfId}/books 경로에서 조회합니다.",
         "operationId": "getMyBookshelves",
@@ -771,7 +759,7 @@
         }
       },
       "post": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "이름·템플릿·꾸미기 설정으로 빈 책장 생성",
         "description": "처음 책장을 만들 때 이름과 템플릿·색상·아이템 설정을 함께 저장합니다. 책이 없는 빈 책장을 생성합니다.\n한 회원은 여러 책장을 만들 수 있고 같은 이름도 허용합니다.\nname은 앞뒤 공백을 제거한 뒤 1~50자로 검증합니다. 회원 ID는 액세스 JWT에서 확인합니다.\ntemplateKey·coverColor 생략 또는 null이면 DEFAULT·#D9DBFF입니다. 값은 앞뒤 공백 제거·대문자 정규화 후 저장합니다.\nitems는 최대 3개이고 slot은 0~5에서 중복할 수 없습니다. 생략·null·빈 배열이면 아이템 없이 생성합니다.\n이름만 보내면 기본 설정의 빈 책장입니다. 생성 요청에는 책·ISBN·책 UUID를 받는 필드가 없습니다.\n책장과 꾸미기 설정을 한 트랜잭션으로 저장합니다. 외부 도서 API를 호출하거나 책 정보·책장 책 연결을 저장하지 않습니다.\n201 응답의 id는 책장 UUID이고 bookCount는 항상 0입니다. 저장한 꾸미기는 /{id}/decoration에서 조회합니다.\n생성 후 POST /api/bookshelf/{id}/books에 ISBN을 보내 책을 추가합니다.\n책을 담은 뒤 PUT /api/bookshelf/{id}/decoration에서 bookId로 미리보기 책을 선택할 수 있습니다.\n책장 목록이 빈 배열일 때 프런트의 '첫 책장 만들기' 흐름에서 사용합니다.\n",
         "operationId": "createMyBookshelf",
@@ -824,17 +812,13 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookshelfResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookshelfResponse" }
                   }
                 }
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/InvalidBookshelfCreation"
-          },
+          "400": { "$ref": "#/components/responses/InvalidBookshelfCreation" },
           "401": { "$ref": "#/components/responses/Unauthorized" },
           "403": { "$ref": "#/components/responses/Forbidden" },
           "500": { "$ref": "#/components/responses/InternalServerError" }
@@ -843,7 +827,7 @@
     },
     "/api/bookshelf/{bookshelfId}/books": {
       "get": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "선택한 책장에 담긴 책 목록 조회",
         "description": "저장된 책 정보와 해당 책장에 추가한 시각을 최신순으로 반환합니다. 외부 API를 호출하지 않습니다. 내 빈 책장이면 200과 빈 배열, 없는 책장 또는 다른 회원의 책장이면 404입니다. 각 항목의 id는 회원·책장마다 다른 개별 책 UUID이며, book.id는 공유 도서 정보 UUID입니다. 메모도 개별 책마다 다릅니다. 현재 전체 목록을 반환하며 별도의 페이지 파라미터는 없습니다.",
         "operationId": "getBooksInMyBookshelf",
@@ -900,7 +884,7 @@
         }
       },
       "post": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "선택한 책장에 ISBN으로 책 추가",
         "description": "검색 결과의 ISBN-13만 전송합니다. 공백·하이픈을 제거한 값으로 처리합니다.\n먼저 내 책장인지 확인하고, DB에 없는 ISBN이면 서버가 외부 API에서 제목·저자·표지 URL 등을 조회합니다.\n책 정보와 해당 책장 연결은 한 트랜잭션으로 저장하며 실패하면 새 책 정보도 남지 않습니다.\n이미 저장된 ISBN은 기존 책 UUID와 메타데이터를 재사용하고 외부 API를 호출하지 않습니다.\n같은 책장에 동일 ISBN의 책이 이미 있으면 409로 거절합니다. 다른 책장에는 같은 책을 담을 수 있습니다.\n추가 성공 시 200입니다. 회원 ID·제목·표지 URL은 요청 본문으로 받지 않습니다.\n표지 이미지 파일을 저장하지 않고 URL만 저장합니다. 표지가 없으면 null입니다.\n없는 책장 또는 다른 회원의 책장은 404이며, 외부 API 조회 전에 접근을 차단합니다.\n",
         "operationId": "addBookToMyBookshelf",
@@ -917,9 +901,7 @@
         "requestBody": {
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/BookshelfAddRequest"
-              },
+              "schema": { "$ref": "#/components/schemas/BookshelfAddRequest" },
               "example": { "isbn": "9788983925551" }
             }
           },
@@ -970,7 +952,7 @@
     },
     "/api/bookshelf/{bookshelfId}/books/{bookId}/memos": {
       "get": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "내 책장 안의 책 메모 목록 조회",
         "description": "메모를 생성 시각 최신순으로 반환합니다. 수정해도 목록 순서와 createdAt은 바뀌지 않습니다. 본인의 PUBLIC·PRIVATE 메모를 모두 반환합니다. 다른 회원의 공개 메모는 GET /api/books/{bookId}/memos/public에서 조회합니다. 내 책장에 담긴 책에 메모가 없으면 200과 빈 배열입니다. 책장에 담기지 않은 책은 404입니다. 사진은 imageUrl로 따로 조회하며 목록 응답에는 사진 바이너리를 넣지 않습니다. 현재 페이지 구분 없이 전체 목록을 반환합니다.",
         "operationId": "getMyBookMemos",
@@ -1066,7 +1048,7 @@
         }
       },
       "post": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "내 책장 안의 책에 글·사진 메모 작성",
         "description": "책장에 이미 추가한 책에만 작성할 수 있습니다. 먼저 책장 소유권과 책장 안의 책을 확인합니다.\nmultipart/form-data의 content(글), page(페이지 번호), image(사진 파일)를 전송합니다.\n비공개 글을 체크하면 visibility=PRIVATE, 해제하면 PUBLIC을 보냅니다. 생성에서 생략하면 PRIVATE입니다.\nPUBLIC은 다른 로그인 회원도 글·사진을 조회할 수 있고 PRIVATE는 작성자만 조회합니다.\n글만·사진만·글과 사진을 함께 작성할 수 있으며, 글과 사진이 모두 없으면 400입니다.\ncontent는 앞뒤 공백 제거 후 최대 10,000자이고 내부 줄바꿈을 유지합니다. page는 선택 입력이며 1 이상입니다.\nimage는 메모당 JPEG·PNG 1장, 최대 5MiB 및 2,000만 화소입니다. 확장자나 클라이언트 MIME 대신 실제 이미지 헤더로 형식을 확인합니다.\n사진은 메모와 같은 DB 트랜잭션으로 저장합니다. 글과 사진 저장에 실패하면 메모도 남지 않습니다.\n회원은 액세스 JWT에서 확인하며, 같은 책이 다른 회원 또는 다른 책장에 있어도 메모는 각각 별도로 관리합니다.\n응답의 bookshelfBookId는 책장 책 응답의 id이며 이 개별 책에 메모를 연결합니다. bookId는 공유 도서 정보 UUID입니다.\nremoveImage는 생성 시 생략하거나 false로 전송합니다. 응답의 id는 메모 UUID입니다.\n",
         "operationId": "createMyBookMemo",
@@ -1117,9 +1099,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookMemoResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookMemoResponse" }
                   }
                 }
               }
@@ -1137,7 +1117,7 @@
     },
     "/api/books/search-history": {
       "get": {
-        "tags": ["최근 검색어"],
+        "tags": ["BookSearchHistory"],
         "summary": "내 최근 검색어 목록 조회",
         "description": "내 검색어를 마지막 검색 시각 최신순으로 최대 10개 반환합니다. 이력이 없으면 빈 배열입니다. 회원은 액세스 JWT에서 확인하며 다른 회원의 이력을 조회할 수 없습니다.",
         "operationId": "getMyRecentSearches",
@@ -1209,7 +1189,7 @@
         }
       },
       "post": {
-        "tags": ["최근 검색어"],
+        "tags": ["BookSearchHistory"],
         "summary": "최근 검색어 저장·시각 갱신",
         "description": "프런트에서 검색을 제출할 때 한 번 호출합니다. 검색 결과 페이지 이동 시에는 다시 호출할 필요가 없습니다.\nkeyword는 앞뒤 공백 제거 후 1~100자이며 target 생략 또는 null이면 TITLE입니다.\n같은 회원의 동일 keyword가 있으면 기존 이력 UUID를 유지하며 target과 검색 시각을 갱신합니다.\n최대 10개를 유지하고 초과 시 오래된 검색어를 삭제합니다. 검색 결과가 없는 검색어도 저장할 수 있습니다.\n이 API는 책 정보를 저장하지 않습니다. 신규 저장과 갱신 모두 200을 반환합니다.\n",
         "operationId": "saveMyRecentSearch",
@@ -1263,7 +1243,7 @@
         }
       },
       "delete": {
-        "tags": ["최근 검색어"],
+        "tags": ["BookSearchHistory"],
         "summary": "내 최근 검색어 전체 삭제",
         "description": "현재 회원의 검색 이력만 삭제합니다. 다른 회원과 책장·책 정보에는 영향을 주지 않습니다. 이미 이력이 비어 있어도 204를 반환합니다.",
         "operationId": "clearMyRecentSearches",
@@ -1277,7 +1257,7 @@
     },
     "/api/auth/signup": {
       "post": {
-        "tags": ["auth"],
+        "tags": ["Auth"],
         "summary": "닉네임으로 카카오 회원 가입 완료",
         "description": "POST /api/auth/kakao에서 SIGNUP_REQUIRED를 받은 사용자가 가입 전용 signupToken으로 호출합니다.\nSwagger Authorize의 signupToken 항목에는 토큰 값만 입력합니다.\n닉네임의 앞뒤 공백을 제거한 뒤 2~20자로 검증하며 닉네임 중복은 허용합니다.\n카카오 회원번호는 검증된 JWT에서 가져오므로 요청 본문으로 받지 않습니다.\n가입 완료 시 회원을 DB에 저장하고 LOGIN_SUCCESS와 일반 API용 accessToken을 반환합니다.\n프런트는 signupToken을 폐기하고 accessToken으로 교체합니다.\n이미 가입된 계정으로 재시도하면 409입니다. 만료된 가입 토큰은 다시 카카오 로그인해 발급받습니다.\n",
         "operationId": "completeKakaoSignup",
@@ -1315,9 +1295,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/LoginResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/LoginResponse" }
                   }
                 }
               }
@@ -1334,7 +1312,7 @@
     },
     "/api/auth/kakao": {
       "post": {
-        "tags": ["auth"],
+        "tags": ["Auth"],
         "summary": "앱의 카카오 액세스 토큰으로 로그인 또는 가입 준비",
         "description": "앱에서 카카오 SDK 로그인을 마친 뒤 받은 액세스 토큰을 JSON 본문의 kakaoAccessToken으로 전송합니다.\n이 API는 서비스 JWT 없이 호출하며 Authorization 헤더에는 카카오 토큰을 넣지 않습니다.\n서버는 카카오 액세스 토큰 정보 API에서 토큰의 유효기간과 회원번호를 확인한 뒤\n사용자 정보 API에서 회원번호 id를 다시 조회합니다. 프런트가 전달한 사용자 ID·닉네임은 인증에 사용하지 않습니다.\n서버에 카카오 앱 ID·앱 키·시크릿을 설정하지 않으며 토큰의 발급 앱은 제한하지 않습니다.\n기존 회원은 LOGIN_SUCCESS와 서비스 accessToken, member.memberId(서비스 UUID), member.providerId(카카오 회원번호)를 받습니다.\n신규 사용자는 SIGNUP_REQUIRED와 가입 전용 signupToken을 받으며 아직 DB에 회원을 생성하지 않습니다.\n프런트는 data.status로 분기하고 신규 사용자의 닉네임을 받아 POST /api/auth/signup을 호출합니다.\n두 성공 분기는 모두 HTTP 200이며 success·code·message·data 공통 래퍼를 사용합니다.\n카카오 토큰은 DB에 저장하거나 응답에 돌려주지 않습니다. 인가 코드·ID 토큰을 받는 API가 아닙니다.\n",
         "operationId": "loginWithKakaoAccessToken",
@@ -1342,12 +1320,8 @@
           "description": "카카오 SDK가 발급한 액세스 토큰 원문. Bearer 접두사는 제외합니다.",
           "content": {
             "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/KakaoLoginRequest"
-              },
-              "example": {
-                "kakaoAccessToken": "\u003CkakaoAccessToken\u003E"
-              }
+              "schema": { "$ref": "#/components/schemas/KakaoLoginRequest" },
+              "example": { "kakaoAccessToken": "<kakaoAccessToken>" }
             }
           },
           "required": true
@@ -1378,9 +1352,7 @@
                     },
                     "data": {
                       "oneOf": [
-                        {
-                          "$ref": "#/components/schemas/LoginResponse"
-                        },
+                        { "$ref": "#/components/schemas/LoginResponse" },
                         {
                           "$ref": "#/components/schemas/SignupRequiredResponse"
                         }
@@ -1398,7 +1370,7 @@
                       "message": "요청이 성공했습니다.",
                       "data": {
                         "status": "LOGIN_SUCCESS",
-                        "accessToken": "\u003CaccessToken\u003E",
+                        "accessToken": "<accessToken>",
                         "tokenType": "Bearer",
                         "expiresIn": 900,
                         "member": {
@@ -1419,7 +1391,7 @@
                       "message": "요청이 성공했습니다.",
                       "data": {
                         "status": "SIGNUP_REQUIRED",
-                        "signupToken": "\u003CsignupToken\u003E",
+                        "signupToken": "<signupToken>",
                         "tokenType": "Bearer",
                         "expiresIn": 300
                       }
@@ -1439,7 +1411,7 @@
     },
     "/api/bookshelf/{bookshelfId}": {
       "get": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "내 책장 한 개의 요약 조회",
         "description": "선택한 책장의 이름·현재 책 수·생성 시각·템플릿 키·표지 색상을 조회합니다. 없거나 다른 회원의 책장이면 404입니다. 도서 목록은 이 응답에 포함되지 않습니다.",
         "operationId": "getMyBookshelf",
@@ -1477,9 +1449,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookshelfResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookshelfResponse" }
                   }
                 }
               }
@@ -1493,7 +1463,7 @@
         }
       },
       "delete": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "내 책장 삭제",
         "description": "책장과 그 안의 모든 개별 책·메모·첨부 사진을 삭제합니다. 공유 도서 정보와 다른 책장·다른 회원의 개별 책과 메모는 유지합니다. 같은 ISBN을 다시 책장에 추가하면 공유 도서 정보 UUID는 재사용하고 개별 책 UUID는 새로 생성합니다. 존재하지 않거나 다른 회원의 책장은 404입니다.",
         "operationId": "deleteMyBookshelf",
@@ -1521,7 +1491,7 @@
     },
     "/api/bookshelf/{bookshelfId}/books/{bookId}": {
       "get": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "내 책장 안의 책 상세 조회",
         "description": "선택한 책장에 담긴 책의 제목·저자·표지 URL·설명과 책장 추가 시각을 반환합니다. 내 책장에 담긴 책만 조회하며, 외부 API를 호출하지 않습니다. 상세 화면의 메모 목록은 같은 경로 뒤에 /memos를 붙여 별도로 조회합니다. bookId는 검색 결과 ISBN이 아닌 책장 책 목록 응답의 book.id입니다.",
         "operationId": "getBookInMyBookshelf",
@@ -1583,7 +1553,7 @@
         }
       },
       "delete": {
-        "tags": ["bookshelf"],
+        "tags": ["Bookshelf"],
         "summary": "선택한 책장에서 책 한 개 빼기",
         "description": "해당 책장에 담긴 개별 책과 그 책에 작성한 메모·첨부 사진을 함께 삭제합니다. 미리보기에 선택된 책이면 해당 배치도 제거합니다. 공유 책 정보와 다른 책장에 담긴 같은 책은 유지합니다. 존재하지 않는 책장·다른 회원의 책장·해당 책장에 없는 책이면 404입니다. bookId에는 ISBN이 아닌 책 목록 응답의 book.id를 사용합니다.",
         "operationId": "removeBookFromMyBookshelf",
@@ -1619,7 +1589,7 @@
     },
     "/api/bookshelf/{bookshelfId}/books/{bookId}/memos/{memoId}/image": {
       "get": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "내 메모 또는 공개 메모의 첨부 사진 조회",
         "description": "JPEG 또는 PNG 바이너리를 반환합니다. 액세스 JWT가 필요하며 메모의 공개 범위를 확인합니다.\nPRIVATE 사진은 작성자만, PUBLIC 사진은 다른 로그인 회원도 조회할 수 있습니다.\n다른 회원의 PRIVATE 사진은 URL을 알고 있어도 403 공통 JSON 응답과 code=PRIVATE_MEMO·data.visibility=PRIVATE를 반환합니다.\n응답의 imageUrl은 서버 기준 상대 경로입니다. 공개 파일 경로가 아니며 JSON이나 Base64를 반환하지 않습니다.\n브라우저 img의 src에 URL만 넣으면 JWT 헤더가 전달되지 않으므로, Bearer 헤더를 포함한 fetch로 Blob을 받아 표시합니다.\n메모가 없거나 책장·책·메모 관계가 다르면 404입니다. 접근 가능한 메모에 사진이 없어도 404입니다.\nCache-Control: no-store를 반환합니다.\n",
         "operationId": "getMyBookMemoImage",
@@ -1667,7 +1637,7 @@
     },
     "/api/books": {
       "get": {
-        "tags": ["도서"],
+        "tags": ["Books"],
         "summary": "제목·저자·ISBN으로 책 검색",
         "description": "한 요청에서 TITLE, AUTHOR, ISBN 중 한 검색 대상을 선택합니다. 기본은 제목 검색입니다.\nLATEST와 TITLE 정렬은 국립중앙도서관 ISBN API(NL_ISBN_API_KEY),\nPOPULAR는 정보나루 API(LIBRARY_NARU_API_KEY)를 사용하며 대출 수 기준입니다.\nLATEST는 출판 예정일 내림차순이므로 실제 출간일과 다를 수 있습니다.\nISBN 검색은 공백·하이픈을 제거한 13자리 ISBN을 사용합니다.\n결과에는 내부 id가 없으며 조회만으로 책 정보를 DB에 저장하거나 갱신하지 않습니다.\n제목·유효 ISBN이 없는 항목은 제외하고 페이지 내 동일 ISBN은 합칩니다.\ntotalCount는 제공처 원본 검색 건수입니다. 검색 결과가 없어도 200과 빈 books 배열을 반환합니다.\n일반 검색에는 카테고리 필터가 없습니다. 최근 검색어 저장은 별도 POST API를 호출합니다.\n정보나루의 조회는 page * size가 5,000 이하일 때 지원합니다.\n",
         "operationId": "searchBooks",
@@ -1737,9 +1707,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookPageResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookPageResponse" }
                   }
                 }
               }
@@ -1756,7 +1724,7 @@
     },
     "/api/books/{id}": {
       "get": {
-        "tags": ["도서"],
+        "tags": ["Books"],
         "summary": "내부 책 ID로 저장된 책 정보 조회",
         "description": "책장에 책을 추가한 응답의 book.id를 사용합니다. 책장 ID나 ISBN을 보내는 경로가 아닙니다. 외부 API를 호출하지 않고 DB에 저장된 정보를 반환합니다. 공유 서지정보이므로 로그인한 회원이 조회할 수 있습니다. 조회로 책 정보를 갱신하지 않습니다. 아직 저장되지 않은 ID는 404입니다.",
         "operationId": "getStoredBook",
@@ -1794,9 +1762,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookResponse" }
                   }
                 }
               }
@@ -1812,7 +1778,7 @@
     },
     "/api/books/{bookId}/memos/public": {
       "get": {
-        "tags": ["책 메모"],
+        "tags": ["BookMemo"],
         "summary": "책별 공개 메모 목록 조회",
         "description": "저장된 책 UUID를 기준으로 여러 회원이 작성한 PUBLIC 메모를 모아 반환합니다.\n메모는 회원의 책장에 담긴 개별 책에 연결되며 여러 회원·책장에 작성된 공개 메모를 함께 조회합니다.\n액세스 JWT가 필요하며 해당 책을 내 책장에 추가하지 않아도 조회할 수 있습니다.\n본인의 공개 메모도 포함하지만 PRIVATE와 공개 범위가 없는 기존 메모는 목록·totalCount에서 제외합니다.\n생성 시각 최신순으로 반환하며 같은 시각은 메모 UUID 내림차순으로 정렬합니다.\npage는 1부터, size는 기본 20·최대 50입니다. 공개 메모가 없으면 200과 memos=[]입니다.\n응답의 bookshelfId·bookId·id로 메모 상세와 사진을 조회합니다. bookshelfBookId는 작성자의 개별 책 UUID입니다.\n작성자는 authorId·authorNickname으로 구분합니다.\n상세·사진 경로는 /api/bookshelf/{bookshelfId}/books/{bookId}/memos/{memoId}이며 사진은 뒤에 /image를 붙입니다.\n수정·삭제는 작성자만 가능합니다. 다른 회원은 공개 메모를 읽을 수 있어도 변경할 수 없습니다.\n비공개로 전환된 메모에 상세·사진 조회를 요청하면 403과 code=PRIVATE_MEMO를 반환합니다.\n외부 도서 API를 호출하거나 책을 새로 저장하지 않습니다. 저장된 책 UUID가 없으면 404입니다.\n",
         "operationId": "getPublicBookMemos",
@@ -1900,7 +1866,7 @@
     },
     "/api/books/recommendations": {
       "get": {
-        "tags": ["도서"],
+        "tags": ["Books"],
         "summary": "ISBN 기준 관련 도서 추천 조회",
         "description": "정보나루의 reader 또는 mania 추천 유형을 사용합니다. 기준 책 자체는 제외하고 최대 size권을 반환합니다. 도서·추천 정보를 DB에 저장하지 않으며 검색 결과처럼 ISBN으로 식별합니다. LIBRARY_NARU_API_KEY가 필요합니다. 추천이 없으면 200과 빈 배열을 반환합니다.",
         "operationId": "getRelatedBooks",
@@ -1918,7 +1884,12 @@
             "in": "query",
             "description": "정보나루 추천 유형",
             "required": false,
-            "schema": { "type": "string", "enum": ["reader", "mania"] },
+            "schema": {
+              "type": "string",
+              "allOf": [
+                { "$ref": "#/components/schemas/BookRecommendationType" }
+              ]
+            },
             "example": "reader"
           },
           {
@@ -1962,9 +1933,7 @@
                     },
                     "data": {
                       "type": "array",
-                      "items": {
-                        "$ref": "#/components/schemas/BookMetadata"
-                      }
+                      "items": { "$ref": "#/components/schemas/BookMetadata" }
                     }
                   }
                 }
@@ -1982,7 +1951,7 @@
     },
     "/api/books/popular": {
       "get": {
-        "tags": ["도서"],
+        "tags": ["Books"],
         "summary": "기간·KDC 분류별 인기 대출 도서 조회",
         "description": "정보나루의 공공도서관 대출 통계 순서로 도서를 반환합니다. 앱 내부 검색 횟수 기반 순위가 아닙니다.\nendDate 생략 시 한국 시간 기준 오늘, startDate 생략 시 endDate에서 3개월 전입니다.\nstartDate는 endDate 이후일 수 없고 endDate는 오늘 이후일 수 없습니다.\nkdc는 선택 사항인 대분류 0~9 한 개입니다. 생략하면 전체 분류입니다.\n결과는 ISBN으로 식별하며 DB에 저장하지 않습니다. LIBRARY_NARU_API_KEY가 필요합니다.\n정보나루의 조회는 page * size가 5,000 이하일 때 지원합니다.\n",
         "operationId": "getPopularBooks",
@@ -2064,9 +2033,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookPageResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookPageResponse" }
                   }
                 }
               }
@@ -2083,7 +2050,7 @@
     },
     "/api/books/by-isbn/{isbn}": {
       "get": {
-        "tags": ["도서"],
+        "tags": ["Books"],
         "summary": "ISBN으로 외부 책 상세 정보 조회",
         "description": "책장에 추가하기 전 검색 결과의 ISBN으로 책 정보를 다시 조회합니다. 이 API는 DB에 저장하지 않습니다.\n국립중앙도서관 인증키가 있으면 우선 사용하고, 결과나 표지가 없으며 정보나루 키가 있으면 정보나루 결과를 사용합니다.\n두 인증키가 모두 없으면 503, 제공처에 해당 ISBN이 없으면 404입니다.\n제목·저자·표지 URL 등 외부 정보를 반환하며 내부 책 id는 없습니다. 공백·하이픈을 제거한 ISBN-13만 허용합니다.\n",
         "operationId": "getExternalBookByIsbn",
@@ -2121,9 +2088,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/BookMetadata"
-                    }
+                    "data": { "$ref": "#/components/schemas/BookMetadata" }
                   }
                 }
               }
@@ -2141,7 +2106,7 @@
     },
     "/api/auth/me": {
       "get": {
-        "tags": ["auth"],
+        "tags": ["Auth"],
         "summary": "내 회원 정보 조회",
         "description": "액세스 JWT의 sub(서비스 회원 UUID)로 DB에서 가입된 회원 정보를 조회합니다. 가입 전용 토큰으로는 호출할 수 없습니다. 회원이 DB에 없거나 sub가 잘못된 경우 401입니다.",
         "operationId": "getCurrentMember",
@@ -2169,9 +2134,7 @@
                       "description": "성공·오류 안내 메시지",
                       "example": "요청이 성공했습니다."
                     },
-                    "data": {
-                      "$ref": "#/components/schemas/AuthUserResponse"
-                    }
+                    "data": { "$ref": "#/components/schemas/AuthUserResponse" }
                   }
                 }
               }
@@ -2185,7 +2148,7 @@
     },
     "/api/books/search-history/{historyId}": {
       "delete": {
-        "tags": ["최근 검색어"],
+        "tags": ["BookSearchHistory"],
         "summary": "내 최근 검색어 한 개 삭제",
         "description": "최근 검색어 응답의 id를 사용합니다. 책 ID나 책장 ID가 아닙니다. 존재하지 않거나 다른 회원의 이력인 경우 모두 404입니다.",
         "operationId": "deleteMyRecentSearch",
@@ -2328,6 +2291,12 @@
         },
         "description": "방명록 글. 작성자 UUID·닉네임만 공개하며 카카오 계정 정보는 포함하지 않습니다."
       },
+      "BookshelfBookDisplayType": {
+        "type": "string",
+        "description": "미리보기의 책 표시 방식. FRONT는 앞표지, SPINE은 책등입니다.",
+        "example": "FRONT",
+        "enum": ["FRONT", "SPINE"]
+      },
       "BookshelfDecorationRequest": {
         "required": ["coverColor", "name", "templateKey"],
         "type": "object",
@@ -2392,11 +2361,7 @@
             "example": 0
           },
           "displayType": {
-            "type": "string",
-            "description": "미리보기의 책 표시 방식. FRONT는 앞표지, SPINE은 책등입니다.",
-            "example": "FRONT",
-            "default": "SPINE",
-            "enum": ["FRONT", "SPINE"]
+            "$ref": "#/components/schemas/BookshelfBookDisplayType"
           }
         },
         "description": "미리보기에 표시할 책 한 권. 해당 책장에 이미 담긴 책만 선택할 수 있습니다."
@@ -2487,7 +2452,7 @@
             "description": "표지 URL 제공처. 표지가 없으면 null입니다.",
             "nullable": true,
             "example": "NATIONAL_LIBRARY",
-            "enum": ["NATIONAL_LIBRARY", "LIBRARY_NARU"]
+            "allOf": [{ "$ref": "#/components/schemas/BookCoverImageSource" }]
           },
           "description": {
             "type": "string",
@@ -2557,10 +2522,7 @@
             "example": 0
           },
           "displayType": {
-            "type": "string",
-            "description": "미리보기의 책 표시 방식. FRONT는 앞표지, SPINE은 책등입니다.",
-            "example": "FRONT",
-            "enum": ["FRONT", "SPINE"]
+            "$ref": "#/components/schemas/BookshelfBookDisplayType"
           },
           "book": { "$ref": "#/components/schemas/BookResponse" }
         },
@@ -2593,15 +2555,15 @@
             "example": false,
             "default": false
           },
-          "visibility": {
-            "type": "string",
-            "description": "메모 공개 범위. PRIVATE는 작성자만, PUBLIC은 다른 로그인 회원도 글과 사진을 조회할 수 있습니다.",
-            "nullable": true,
-            "example": "PRIVATE",
-            "enum": ["PRIVATE", "PUBLIC"]
-          }
+          "visibility": { "$ref": "#/components/schemas/BookMemoVisibility" }
         },
         "description": "multipart/form-data 메모 폼. content 또는 사진 중 하나는 있어야 합니다. 메모당 사진은 1장입니다."
+      },
+      "BookMemoVisibility": {
+        "type": "string",
+        "description": "메모 공개 범위. PRIVATE는 작성자만, PUBLIC은 다른 로그인 회원도 글과 사진을 조회할 수 있습니다.",
+        "example": "PRIVATE",
+        "enum": ["PRIVATE", "PUBLIC"]
       },
       "BookMemoResponse": {
         "required": [
@@ -2654,12 +2616,7 @@
             "nullable": true,
             "example": 42
           },
-          "visibility": {
-            "type": "string",
-            "description": "메모 공개 범위. PRIVATE는 작성자만, PUBLIC은 다른 로그인 회원도 글과 사진을 조회할 수 있습니다.",
-            "example": "PRIVATE",
-            "enum": ["PRIVATE", "PUBLIC"]
-          },
+          "visibility": { "$ref": "#/components/schemas/BookMemoVisibility" },
           "authorId": {
             "type": "string",
             "description": "메모 작성자의 서비스 회원 UUID. 카카오 회원번호를 공개하지 않습니다.",
@@ -2673,7 +2630,7 @@
           },
           "imageUrl": {
             "type": "string",
-            "description": "사진 조회 API의 서버 기준 상대 경로. 사진이 없으면 null입니다. Authorization: Bearer \u003CaccessToken\u003E이 필요하며 PRIVATE 사진은 작성자, PUBLIC 사진은 다른 회원도 조회합니다.",
+            "description": "사진 조회 API의 서버 기준 상대 경로. 사진이 없으면 null입니다. Authorization: Bearer <accessToken>이 필요하며 PRIVATE 사진은 작성자, PUBLIC 사진은 다른 회원도 조회합니다.",
             "nullable": true,
             "example": "/api/bookshelf/fe5818ea-41ea-44bf-9549-f778c8294dcb/books/638a6eb5-7142-4dc7-b63a-5da678e25353/memos/28c39e96-b550-46b2-8ba6-05af528fced0/image"
           },
@@ -2910,7 +2867,7 @@
             "type": "string",
             "description": "인증 제공자",
             "example": "kakao",
-            "enum": ["kakao"]
+            "allOf": [{ "$ref": "#/components/schemas/AuthProvider" }]
           },
           "providerId": {
             "type": "string",
@@ -2934,18 +2891,18 @@
             "type": "string",
             "description": "프런트 로그인 완료 분기값",
             "example": "LOGIN_SUCCESS",
-            "enum": ["LOGIN_SUCCESS"]
+            "allOf": [{ "$ref": "#/components/schemas/LoginSuccessStatus" }]
           },
           "accessToken": {
             "type": "string",
             "description": "서비스가 발급한 액세스 JWT. 일반 API의 Authorization 헤더에 사용합니다. 카카오 토큰이 아닙니다.",
-            "example": "\u003CaccessToken\u003E"
+            "example": "<accessToken>"
           },
           "tokenType": {
             "type": "string",
             "description": "Authorization 헤더의 인증 방식",
             "example": "Bearer",
-            "enum": ["Bearer"]
+            "allOf": [{ "$ref": "#/components/schemas/TokenType" }]
           },
           "expiresIn": {
             "minimum": 1,
@@ -2969,7 +2926,7 @@
             "type": "string",
             "description": "카카오 액세스 토큰 원문. Bearer 접두사·인가 코드·ID 토큰·서비스 JWT를 넣지 않습니다.",
             "writeOnly": true,
-            "example": "\u003CkakaoAccessToken\u003E"
+            "example": "<kakaoAccessToken>"
           }
         },
         "description": "앱의 카카오 SDK 로그인으로 받은 액세스 토큰. 서버가 카카오에 직접 검증하고 회원번호를 조회합니다."
@@ -2982,18 +2939,18 @@
             "type": "string",
             "description": "프런트 닉네임 입력 화면 분기값",
             "example": "SIGNUP_REQUIRED",
-            "enum": ["SIGNUP_REQUIRED"]
+            "allOf": [{ "$ref": "#/components/schemas/SignupRequiredStatus" }]
           },
           "signupToken": {
             "type": "string",
             "description": "가입 전용 임시 JWT. POST /api/auth/signup에서만 사용하며 일반 API에는 사용할 수 없습니다.",
-            "example": "\u003CsignupToken\u003E"
+            "example": "<signupToken>"
           },
           "tokenType": {
             "type": "string",
             "description": "Authorization 헤더의 인증 방식",
             "example": "Bearer",
-            "enum": ["Bearer"]
+            "allOf": [{ "$ref": "#/components/schemas/TokenType" }]
           },
           "expiresIn": {
             "minimum": 1,
@@ -3049,9 +3006,7 @@
           "entries": {
             "type": "array",
             "description": "최신순 글 목록. 글이 없으면 빈 배열입니다.",
-            "items": {
-              "$ref": "#/components/schemas/GuestbookEntryResponse"
-            }
+            "items": { "$ref": "#/components/schemas/GuestbookEntryResponse" }
           }
         },
         "description": "회원별 방명록과 목록 페이지. 모든 회원은 별도 생성 요청 없이 빈 방명록부터 조회할 수 있습니다."
@@ -3118,7 +3073,7 @@
             "description": "표지 URL의 제공처. 표지가 없으면 null입니다. 정보나루 표지는 비영리 화면 표시 조건을 따릅니다.",
             "nullable": true,
             "example": "NATIONAL_LIBRARY",
-            "enum": ["NATIONAL_LIBRARY", "LIBRARY_NARU"]
+            "allOf": [{ "$ref": "#/components/schemas/BookCoverImageSource" }]
           },
           "description": {
             "type": "string",
@@ -3191,6 +3146,19 @@
           }
         },
         "description": "책별 공개 메모 페이지. PRIVATE 또는 공개 범위 값이 없는 기존 메모는 목록·총 건수에서 제외합니다."
+      },
+      "LoginSuccessStatus": { "type": "string", "enum": ["LOGIN_SUCCESS"] },
+      "SignupRequiredStatus": { "type": "string", "enum": ["SIGNUP_REQUIRED"] },
+      "TokenType": { "type": "string", "enum": ["Bearer"] },
+      "AuthProvider": { "type": "string", "enum": ["kakao"] },
+      "BookCoverImageSource": {
+        "type": "string",
+        "nullable": true,
+        "enum": ["NATIONAL_LIBRARY", "LIBRARY_NARU"]
+      },
+      "BookRecommendationType": {
+        "type": "string",
+        "enum": ["reader", "mania"]
       }
     },
     "responses": {
