@@ -20,6 +20,8 @@ class _BookcaseItem {
 class BookcaseListScreen extends StatefulWidget {
   const BookcaseListScreen({super.key});
 
+  static String url = '/bookcases';
+
   @override
   State<BookcaseListScreen> createState() => _BookcaseListScreenState();
 }

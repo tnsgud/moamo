@@ -22,6 +22,8 @@ typedef _SearchBook = ({Book book, bool inLibrary});
 class CommunitySearchScreen extends StatefulWidget {
   const CommunitySearchScreen({super.key, required this.query});
 
+  static String url = '/community/search';
+
   final String query;
 
   @override

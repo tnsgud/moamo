@@ -17,6 +17,7 @@ class BookDetailScreen extends StatefulWidget {
   const BookDetailScreen({super.key, required this.id});
 
   final int id;
+  static String url = '/book/:id';
 
   @override
   State<BookDetailScreen> createState() => _BookDetailScreenState();

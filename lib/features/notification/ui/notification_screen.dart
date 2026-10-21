@@ -13,6 +13,8 @@ import 'widgets/notification_tile.dart';
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
+  static String url = '/notification';
+
   @override
   State<NotificationScreen> createState() => _NotificationScreenState();
 }

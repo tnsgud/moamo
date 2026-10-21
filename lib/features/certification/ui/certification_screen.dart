@@ -12,6 +12,8 @@ import 'widgets/book_select_sheet.dart';
 class CertificationScreen extends StatefulWidget {
   const CertificationScreen({super.key});
 
+  static String url = '/certification';
+
   @override
   State<CertificationScreen> createState() => _CertificationScreenState();
 }

@@ -20,6 +20,7 @@ class BookBoardScreen extends StatefulWidget {
   const BookBoardScreen({super.key, required this.bookId});
 
   final int bookId;
+  static String url = '/community/book/:id';
 
   @override
   State<BookBoardScreen> createState() => _BookBoardScreenState();

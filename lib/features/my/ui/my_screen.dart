@@ -13,6 +13,8 @@ import 'widgets/support_menu.dart';
 class MyScreen extends StatelessWidget {
   const MyScreen({super.key});
 
+  static String url = '/my';
+
   @override
   Widget build(BuildContext context) {
     return Column(

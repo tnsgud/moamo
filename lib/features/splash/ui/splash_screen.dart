@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/auth/ui/login_screen.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
+  static String url = '/splash';
+
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final Duration SPLASH_SCREEN_DURATION = Duration(seconds: 2);
+  final Duration splashScreenDuration = Duration(seconds: 2);
 
   @override
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
-    Future.delayed(SPLASH_SCREEN_DURATION, () {
+    Future.delayed(splashScreenDuration, () {
       if (mounted) {
-        context.go('/library');
+        context.go(LoginScreen.url);
       }
     });
   }

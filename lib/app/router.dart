@@ -23,10 +23,13 @@ import 'package:moamo/features/notification/ui/notification_screen.dart';
 import 'package:moamo/features/splash/ui/splash_screen.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/library',
+  initialLocation: SplashScreen.url,
   routes: [
-    GoRoute(path: '/splash', builder: (context, state) => SplashScreen()),
-    GoRoute(path: '/login', builder: (context, state) => LoginScreen()),
+    GoRoute(
+      path: SplashScreen.url,
+      builder: (context, state) => SplashScreen(),
+    ),
+    GoRoute(path: LoginScreen.url, builder: (context, state) => LoginScreen()),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
           MainShell(navigationShell: navigationShell),
@@ -34,76 +37,74 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/library',
+              path: LibraryHomeScreen.url,
               builder: (context, state) => LibraryHomeScreen(),
             ),
             GoRoute(
-              path: '/bookcases',
+              path: BookcaseListScreen.url,
               builder: (context, state) => BookcaseListScreen(),
             ),
             GoRoute(
-              path: '/book-search',
+              path: BookSearchScreen.url,
               builder: (context, state) => BookSearchScreen(),
             ),
             GoRoute(
-              path: '/book/:id',
+              path: BookDetailScreen.url,
               builder: (context, state) =>
                   BookDetailScreen(id: int.parse(state.pathParameters['id']!)),
             ),
             GoRoute(
-              path: '/book/:id/memo',
+              path: BookMemoScreen.url,
               builder: (context, state) => BookMemoScreen(
                 bookId: int.parse(state.pathParameters['id']!),
               ),
             ),
             GoRoute(
-              path: '/bookcase/new',
+              path: BookcaseFormScreen.createUrl,
               builder: (context, state) => BookcaseFormScreen(),
             ),
             GoRoute(
-              path: '/bookcase/:id/edit',
-              builder: (context, state) {
-                return BookcaseFormScreen(
-                  id: int.parse(state.pathParameters['id']!),
-                );
-              },
+              path: BookcaseFormScreen.editUrl,
+              builder: (context, state) => BookcaseFormScreen(
+                id: int.parse(state.pathParameters['id']!),
+              ),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/community',
+              path: CommunityMainScreen.url,
               builder: (context, state) => CommunityMainScreen(),
             ),
             GoRoute(
-              path: '/community/book/:id',
+              path: BookBoardScreen.url,
               builder: (context, state) => BookBoardScreen(
                 bookId: int.parse(state.pathParameters['id']!),
               ),
             ),
             GoRoute(
-              path: '/community/book/:id/write',
+              path: PostWriteScreen.bookUrl,
               builder: (context, state) => PostWriteScreen(),
             ),
             GoRoute(
-              path: '/community/search',
+              path: CommunitySearchScreen.url,
               builder: (context, state) => CommunitySearchScreen(
                 query: state.uri.queryParameters['q'] ?? '',
               ),
             ),
             GoRoute(
-              path: '/community/post/:id',
+              path: PostDetailScreen.url,
               builder: (context, state) => PostDetailScreen(
                 postId: int.parse(state.pathParameters['id']!),
               ),
             ),
             GoRoute(
-              path: '/community/free',
+              path: FreeBoardScreen.url,
               builder: (context, state) => FreeBoardScreen(),
             ),
             GoRoute(
-              path: '/community/free/write',
+              path: PostWriteScreen.freeUrl,
               builder: (context, state) => PostWriteScreen(
                 title: '게시글',
                 categories: ['끄적끄적', '책 찾아주세요', '서재 자랑'],
@@ -115,28 +116,40 @@ final appRouter = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/certification',
+              path: CertificationScreen.url,
               builder: (context, state) => CertificationScreen(),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
-            GoRoute(path: '/my', builder: (context, state) => MyScreen()),
+            GoRoute(
+              path: MyScreen.url,
+              builder: (context, state) => MyScreen(),
+            ),
           ],
         ),
       ],
     ),
 
-    GoRoute(path: '/my/items', builder: (context, state) => MyItemsScreen()),
-    GoRoute(path: '/my/draw', builder: (context, state) => RandomDrawScreen()),
     GoRoute(
-      path: '/notification',
+      path: MyItemsScreen.url,
+      builder: (context, state) => MyItemsScreen(),
+    ),
+    GoRoute(
+      path: RandomDrawScreen.url,
+      builder: (context, state) => RandomDrawScreen(),
+    ),
+    GoRoute(
+      path: NotificationScreen.url,
       builder: (context, state) => NotificationScreen(),
     ),
-    GoRoute(path: '/guestbook', builder: (context, state) => GuestbookScreen()),
     GoRoute(
-      path: '/bookcase/decorate',
+      path: GuestbookScreen.url,
+      builder: (context, state) => GuestbookScreen(),
+    ),
+    GoRoute(
+      path: BookcaseDecorateScreen.url,
       builder: (context, state) => BookcaseDecorateScreen(),
     ),
   ],

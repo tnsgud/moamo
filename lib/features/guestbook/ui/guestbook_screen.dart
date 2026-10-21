@@ -12,6 +12,8 @@ import 'widgets/guestbook_input_bar.dart';
 class GuestbookScreen extends StatefulWidget {
   const GuestbookScreen({super.key});
 
+  static String url = '/guestbook';
+
   @override
   State<GuestbookScreen> createState() => _GuestbookScreenState();
 }

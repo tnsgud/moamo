@@ -18,6 +18,8 @@ import 'widgets/decorate_preview.dart';
 class BookcaseDecorateScreen extends StatefulWidget {
   const BookcaseDecorateScreen({super.key});
 
+  static String url = '/bookcase/decorate';
+
   @override
   State<BookcaseDecorateScreen> createState() => _BookcaseDecorateScreenState();
 }

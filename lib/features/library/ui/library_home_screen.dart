@@ -1,17 +1,25 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/library/ui/widgets/library_fab.dart';
 
 import 'widgets/create_bookcase.dart';
 import 'widgets/library_app_bar.dart';
 import 'widgets/bookcase.dart';
 import 'widgets/library_chips.dart';
+import 'widgets/library_fab.dart';
 
-class LibraryHomeScreen extends StatelessWidget {
+class LibraryHomeScreen extends StatefulWidget {
   const LibraryHomeScreen({super.key});
 
+  static String url = '/library';
+
+  @override
+  State<LibraryHomeScreen> createState() => _LibraryHomeScreenState();
+}
+
+class _LibraryHomeScreenState extends State<LibraryHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Stack(

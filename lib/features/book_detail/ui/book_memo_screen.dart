@@ -11,6 +11,7 @@ class BookMemoScreen extends StatefulWidget {
   const BookMemoScreen({super.key, required this.bookId});
 
   final int bookId;
+  static String url = '/book/:id/memo';
 
   @override
   State<BookMemoScreen> createState() => _BookMemoScreenState();

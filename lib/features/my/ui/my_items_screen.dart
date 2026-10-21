@@ -14,6 +14,8 @@ import 'widgets/reward_item_card.dart';
 class MyItemsScreen extends StatefulWidget {
   const MyItemsScreen({super.key});
 
+  static String url = '/my/items';
+
   @override
   State<MyItemsScreen> createState() => _MyItemsScreenState();
 }

@@ -22,6 +22,8 @@ class PostDetailScreen extends StatefulWidget {
 
   final int postId;
 
+  static String url = '/community/post/:id';
+
   @override
   State<PostDetailScreen> createState() => _PostDetailScreenState();
 }
@@ -221,14 +223,14 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
             Clipboard.setData(
               ClipboardData(text: '/community/post/${widget.postId}'),
             );
-            showAppToast(context, 'URL이 복사되었습니다.');
+            showAppToast(context, 'url이 복사되었습니다.');
           }
         },
         itemBuilder: (context) => [
           for (final (value, label) in [
             ('report', '신고'),
             ('block', '차단'),
-            ('copy', 'URL 복사'),
+            ('copy', 'url 복사'),
           ])
             PopupMenuItem(
               value: value,

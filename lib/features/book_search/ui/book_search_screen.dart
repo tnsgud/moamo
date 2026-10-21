@@ -13,6 +13,8 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 class BookSearchScreen extends StatefulWidget {
   const BookSearchScreen({super.key});
 
+  static String url = '/book-search';
+
   @override
   State<BookSearchScreen> createState() => _BookSearchScreenState();
 }

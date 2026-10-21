@@ -19,6 +19,8 @@ enum _Phase { idle, drawing, result }
 class RandomDrawScreen extends StatefulWidget {
   const RandomDrawScreen({super.key});
 
+  static String url = '/my/draw';
+
   @override
   State<RandomDrawScreen> createState() => _RandomDrawScreenState();
 }

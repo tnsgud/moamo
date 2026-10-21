@@ -18,6 +18,9 @@ import 'widgets/bookcase_status_bar.dart';
 class BookcaseFormScreen extends StatelessWidget {
   const BookcaseFormScreen({super.key, this.id});
 
+  static String createUrl = '/bookcase/new';
+  static String editUrl = '/bookcase/:id/edit';
+
   final int? id;
 
   @override

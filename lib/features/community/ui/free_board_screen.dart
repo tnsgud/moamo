@@ -18,6 +18,8 @@ import 'widgets/sort_menu_button.dart';
 class FreeBoardScreen extends StatefulWidget {
   const FreeBoardScreen({super.key});
 
+  static String url = '/community/free';
+
   @override
   State<FreeBoardScreen> createState() => _FreeBoardScreenState();
 }

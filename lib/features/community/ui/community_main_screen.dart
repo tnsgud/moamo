@@ -16,6 +16,8 @@ import 'widgets/section_title.dart';
 class CommunityMainScreen extends StatefulWidget {
   const CommunityMainScreen({super.key});
 
+  static String url = '/community';
+
   @override
   State<CommunityMainScreen> createState() => _CommunityMainScreenState();
 }
