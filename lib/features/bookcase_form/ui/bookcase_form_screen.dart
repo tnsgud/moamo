@@ -30,7 +30,11 @@ class BookcaseFormScreen extends StatelessWidget {
         Column(
           children: [
             BookcaseFormAppBar(title: '책장 1'),
-            SearchField(onSubmitted: (value) {}),
+            // 검색창을 누르면 책 검색 화면으로 이동한다.
+            GestureDetector(
+              onTap: () => context.push('/book-search'),
+              child: AbsorbPointer(child: SearchField(onSubmitted: (_) {})),
+            ),
             SizedBox(height: 16),
             BookcaseStatusBar(),
             SizedBox(height: 16),
@@ -53,7 +57,7 @@ class BookcaseFormScreen extends StatelessWidget {
                 children: id == null
                     ? [
                         AppButton(
-                          onTap: () {},
+                          onTap: () => context.push('/book-search'),
                           child: Center(
                             child: Text(
                               '책 추가하기',
@@ -67,18 +71,21 @@ class BookcaseFormScreen extends StatelessWidget {
                     : [
                         ...List.generate(
                           19,
-                          (index) => BookInfoTile(
-                            book: Book(
-                              title: '해리포터와 마법사의 돌',
-                              author: '조앤 K.롤링',
-                              category: '소설',
-                              imageUrl: '',
-                              isCertification: false,
+                          (index) => GestureDetector(
+                            onTap: () => context.push('/book/${index + 1}'),
+                            child: BookInfoTile(
+                              book: Book(
+                                title: '해리포터와 마법사의 돌',
+                                author: '조앤 K.롤링',
+                                category: '소설',
+                                imageUrl: '',
+                                isCertification: false,
+                              ),
                             ),
                           ),
                         ),
                         AppButton(
-                          onTap: () {},
+                          onTap: () => context.push('/book-search'),
                           child: Center(
                             child: Text(
                               '책 추가하기',
