@@ -29,15 +29,15 @@ class CreateBookcase extends StatelessWidget {
         children: [
           Text(
             '첫 책장 만들기',
-            style: AppTextStyles.caption1Bold.copyWith(
+            style: AppTextStyles.subtitleBold.copyWith(
               color: AppColors.neutral90,
             ),
           ),
           AppButton(
             onTap: () => context.push('/bookcase/new'),
             child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-              child: Text('책 추가하기'),
+              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 7),
+              child: Text('책 추가하기', style: AppTextStyles.caption1Bold.copyWith(color: AppColors.neutral90),),
             ),
           ),
         ],
