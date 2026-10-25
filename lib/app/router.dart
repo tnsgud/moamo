@@ -65,9 +65,8 @@ final appRouter = GoRouter(
             ),
             GoRoute(
               path: BookcaseFormScreen.editUrl,
-              builder: (context, state) => BookcaseFormScreen(
-                id: int.parse(state.pathParameters['id']!),
-              ),
+              builder: (context, state) =>
+                  BookcaseFormScreen(id: state.pathParameters['id']!),
             ),
           ],
         ),

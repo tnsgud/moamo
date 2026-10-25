@@ -21,7 +21,7 @@ class BookcaseFormScreen extends StatelessWidget {
   static String createUrl = '/bookcase/new';
   static String editUrl = '/bookcase/:id/edit';
 
-  final int? id;
+  final String? id;
 
   @override
   Widget build(BuildContext context) {

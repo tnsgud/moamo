@@ -14,7 +14,7 @@ class BookcasePreview extends StatelessWidget {
   });
 
   final String title;
-  final int? id;
+  final String? id;
   final VoidCallback onTap;
 
   @override

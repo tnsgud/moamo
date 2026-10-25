@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:moamo/app/app.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -11,5 +12,5 @@ Future<void> main() async {
     FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   }
   await KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
-  runApp(const Moamo());
+  runApp(const ProviderScope(child: Moamo()));
 }
