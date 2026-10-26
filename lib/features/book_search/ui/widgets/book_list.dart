@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
+import 'package:moamo/shared/api/models/book_metadata.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
@@ -10,7 +10,7 @@ class BookList extends StatelessWidget {
 
   final String? title;
   final Widget? action;
-  final List<Book> data;
+  final List<BookMetadata> data;
 
   @override
   Widget build(BuildContext context) {

@@ -1,130 +1,91 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:moamo/features/book_search/model/book.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/book_search/model/book_search_provider.dart';
+import 'package:moamo/features/book_search/model/recent_book_search_history_provider.dart';
+import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_search_app_bar.dart';
-import 'package:moamo/shared/widget/book_info_tile.dart';
-import 'package:moamo/shared/widget/search_field.dart';
-import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/recent_search_history.dart';
 import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/search_field.dart';
 
-class BookSearchScreen extends StatefulWidget {
+class BookSearchScreen extends ConsumerStatefulWidget {
   const BookSearchScreen({super.key});
 
   static String url = '/book-search';
 
   @override
-  State<BookSearchScreen> createState() => _BookSearchScreenState();
+  ConsumerState<BookSearchScreen> createState() => _BookSearchScreenState();
 }
 
-class _BookSearchScreenState extends State<BookSearchScreen> {
-  final List<Book> _books = [
-    Book(
-      title: '해리포터와 마법사의 돌',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: true,
-    ),
-    Book(
-      title: '해리포토와 비밀의 방',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: false,
-    ),
-    Book(
-      title: '해리포터와 아즈카바늬 죄수',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: false,
-    ),
-    Book(
-      title: '해리포터와 불의 잔',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: false,
-    ),
-    Book(
-      title: '해리포터와 죽음의 성물',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: false,
-    ),
-  ];
+class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
+  String query = '';
 
-  bool searchResultVisible = true;
-  int _count = 4;
-  String title = '많은 사람들이 찾고 있어요';
-
-  void _onSubmitted(String value) {
-    if (value.contains('h')) {
-      setState(() {
-        searchResultVisible = false;
-        _count = 0;
-        title = '검색결과: 0건';
-      });
-      return;
-    }
-
-    _count = 4;
-
-    setState(() {
-      searchResultVisible = !searchResultVisible;
-
-      if (searchResultVisible) {
-        title = '검색결과: 1건';
-      } else {
-        title = '많은 사람들이 찾고 있어요';
-      }
-    });
+  void _submit(String value) {
+    final keyword = value.trim();
+    if (keyword.isEmpty) return;
+    ref
+        .read(bookSearchHistoryProvider.notifier)
+        .add(keyword, BookSearchTarget.title);
+    setState(() => query = keyword);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (query.isNotEmpty) {
+      ref
+          .watch(bookSearchProvider(query))
+          .when(
+            data: (data) {
+              // data.books.map((b) => b.)
+              ref.watch(bookRecommendationsProvider(data.books[0].isbn));
+            },
+            error: (error, _) => print('error:$error'),
+            loading: () {},
+          );
+    }
+
     return SingleChildScrollView(
       child: Column(
         children: [
           BookSearchAppBar(),
-          SearchField(onSubmitted: (value) => _onSubmitted(value)),
+          SearchField(onSubmitted: (value) => _submit(value)),
           SizedBox(height: 24),
-          RecentSearchHistory(data: ['해리포터', '오디세이', '후지이 카제', '식케이', '디오니소스']),
+          RecentSearchHistory(),
           SizedBox(height: 24),
           AppChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
           SizedBox(height: 32),
           BookList(
-            title: title,
+            title: '',
             action: SortButton(),
-            data: _count == 0
+            data: query.isEmpty
                 ? []
-                : searchResultVisible
-                ? _books.take(1).toList()
-                : _books,
+                : ref
+                      .watch(bookSearchProvider(query))
+                      .when(
+                        data: (data) => data.books,
+                        loading: () => [],
+                        error: (error, _) => [],
+                      ),
           ),
-          if (searchResultVisible) ...[
-            Text(
-              '함께 하면 좋을 책',
-              style: AppTextStyles.subtitleBold.copyWith(
-                color: AppColors.neutral90,
-              ),
+          Text(
+            '함께 하면 좋을 책',
+            style: AppTextStyles.subtitleBold.copyWith(
+              color: AppColors.neutral90,
             ),
-
-            GridView.count(
-              crossAxisCount: 4,
-              crossAxisSpacing: 25,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              mainAxisExtent: 130,
-              children: [
-                for (final book in _books.take(4)) BookInfoTile(book: book),
-              ],
-            ),
-          ],
+          ),
+          GridView.count(
+            crossAxisCount: 4,
+            crossAxisSpacing: 25,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisExtent: 130,
+            children: [],
+          ),
         ],
       ),
     );

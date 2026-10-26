@@ -1,16 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:moamo/shared/theme/app_colors.dart';
-import 'package:moamo/shared/dimension/app_icon_sizes.dart';
-import 'package:moamo/shared/theme/app_text_styles.dart';
-import 'package:moamo/shared/widget/svg_icon.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/book_search/model/recent_book_search_history_provider.dart';
 
-class RecentSearchHistory extends StatelessWidget {
-  const RecentSearchHistory({super.key, required this.data});
+import '../../../../shared/dimension/app_icon_sizes.dart';
+import '../../../../shared/theme/app_colors.dart';
+import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widget/svg_icon.dart';
 
-  final List<String> data;
+class RecentSearchHistory extends ConsumerWidget {
+  const RecentSearchHistory({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final searchHistory = ref.watch(bookSearchHistoryProvider);
+
     return Column(
       children: [
         Row(
@@ -22,9 +26,12 @@ class RecentSearchHistory extends StatelessWidget {
                 color: AppColors.neutral90,
               ),
             ),
-            Text(
-              '전체 삭제',
-              style: AppTextStyles.btn2.copyWith(color: AppColors.neutral50),
+            GestureDetector(
+              onTap: () => ref.read(bookSearchHistoryProvider.notifier).clear(),
+              child: Text(
+                '전체 삭제',
+                style: AppTextStyles.btn2.copyWith(color: AppColors.neutral50),
+              ),
             ),
           ],
         ),
@@ -37,35 +44,48 @@ class RecentSearchHistory extends StatelessWidget {
               bottom: BorderSide(color: AppColors.neutral15, width: 0.5),
             ),
           ),
-          child: data.isEmpty
-              ? Text(
+          child: searchHistory.when(
+            loading: () => Text('loading'),
+            error: (error, _) => Text('error ${error}'),
+            data: (data) {
+              if (data.isEmpty) {
+                return Text(
                   '최근 검색 내역이 없습니다.',
                   style: AppTextStyles.btn2.copyWith(
                     color: AppColors.neutral40,
                   ),
-                )
-              : ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        data[index],
-                        style: AppTextStyles.btn2.copyWith(
-                          color: AppColors.neutral40,
-                        ),
+                );
+              }
+
+              return ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) => Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      data[index].keyword,
+                      style: AppTextStyles.btn2.copyWith(
+                        color: AppColors.neutral40,
                       ),
-                      SizedBox(width: 2),
-                      SvgIcon(
+                    ),
+                    SizedBox(width: 2),
+                    GestureDetector(
+                      onTap: () => ref
+                          .read(bookSearchHistoryProvider.notifier)
+                          .delete(data[index].id),
+                      child: SvgIcon(
                         name: 'delete',
                         size: AppIconSizes.md,
                         color: AppColors.neutral20,
                       ),
-                    ],
-                  ),
-                  separatorBuilder: (context, index) => SizedBox(width: 12),
-                  itemCount: data.length,
+                    ),
+                  ],
                 ),
+                separatorBuilder: (context, index) => SizedBox(width: 12),
+                itemCount: data.length,
+              );
+            },
+          ),
         ),
       ],
     );

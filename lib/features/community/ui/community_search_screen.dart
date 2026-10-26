@@ -4,6 +4,7 @@ import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
 import 'package:moamo/features/community/model/community_post.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -276,7 +277,7 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen> {
   );
 
   Widget _bookItem(_SearchBook e) => BookListItem(
-    book: e.book,
+    book: BookMetadata(isbn: 'sett', title: 'sdfdsf'),
     trailing: BookActionMenu(
       isInLibrary: e.inLibrary,
       onAdd: () => showAppToast(context, '내 책장에 추가되었습니다.'),
