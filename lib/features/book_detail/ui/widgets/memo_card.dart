@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:moamo/features/book_detail/model/book_memo.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -14,7 +14,15 @@ class MemoCard extends StatelessWidget {
     required this.onDelete,
   });
 
-  final BookMemo memo;
+  final BookMemoResponse memo;
+
+  /// 작성일을 `yy/MM/dd`로 (로컬 시간).
+  String get _date {
+    final d = memo.createdAt.toLocal();
+    String two(int n) => n.toString().padLeft(2, '0');
+    return '${two(d.year % 100)}/${two(d.month)}/${two(d.day)}';
+  }
+
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -33,7 +41,7 @@ class MemoCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                memo.date,
+                _date,
                 style: AppTextStyles.h3.copyWith(color: AppColors.neutral40),
               ),
               Spacer(),
@@ -48,14 +56,16 @@ class MemoCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
-          Text(
-            memo.content,
-            style: AppTextStyles.body1.copyWith(color: AppColors.neutral90),
-          ),
-          if (memo.hasImage) ...[
+          if (memo.content != null) ...[
             SizedBox(height: 12),
-            // TODO: 메모 이미지가 준비되면 교체
+            Text(
+              memo.content!,
+              style: AppTextStyles.body1.copyWith(color: AppColors.neutral90),
+            ),
+          ],
+          if (memo.imageUrl != null) ...[
+            SizedBox(height: 12),
+            // TODO: imageUrl은 JWT가 필요해서 Bearer 헤더로 받아 그려야 한다
             Container(
               width: 125,
               height: 116,

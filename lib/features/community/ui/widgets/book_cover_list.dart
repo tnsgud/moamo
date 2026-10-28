@@ -7,10 +7,18 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'section_title.dart';
 
 class BookCoverList extends StatelessWidget {
-  const BookCoverList({super.key, required this.title, required this.titles});
+  const BookCoverList({
+    super.key,
+    required this.title,
+    required this.titles,
+    this.coverUrls = const [],
+  });
 
   final String title;
   final List<String> titles;
+
+  /// [titles]와 같은 순서의 표지 URL. 없으면 회색 상자.
+  final List<String?> coverUrls;
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +42,17 @@ class BookCoverList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // TODO: 책 표지 이미지로 교체
                         Container(
                           height: 100,
+                          width: double.infinity,
+                          clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
                             color: AppColors.neutral50,
                             borderRadius: AppRadius.xxs,
                           ),
+                          child: i < coverUrls.length && coverUrls[i] != null
+                              ? Image.network(coverUrls[i]!, fit: BoxFit.cover)
+                              : null,
                         ),
                         SizedBox(height: 8),
                         Text(

@@ -17,10 +17,14 @@ class BookInfoTile extends StatelessWidget {
         Container(
           width: double.infinity,
           height: 80,
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: AppColors.blue,
             borderRadius: AppRadius.xxs,
           ),
+          child: book.imageUrl.isEmpty
+              ? null
+              : Image.network(book.imageUrl, fit: BoxFit.cover),
         ),
         const SizedBox(height: 8),
         Text(

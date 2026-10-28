@@ -38,6 +38,20 @@ Future<BookshelfResponse> bookshelf(Ref ref, String bookshelfId) async {
   return res.data;
 }
 
+/// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+@riverpod
+Future<BookshelfBookResponse> bookshelfBook(
+  Ref ref,
+  String bookshelfId,
+  String bookId,
+) async {
+  final res = await apiClient.bookshelf.getBookInMyBookshelf(
+    bookshelfId: bookshelfId,
+    bookId: bookId,
+  );
+  return res.data;
+}
+
 /// 책장 안의 책 목록.
 @riverpod
 class BookshelfBooks extends _$BookshelfBooks {
@@ -73,6 +87,21 @@ class BookshelfBooks extends _$BookshelfBooks {
     ref.invalidate(bookshelfProvider(bookshelfId));
     ref.invalidate(myBookshelvesProvider);
   }
+}
+
+/// 내 모든 책장의 책 (같은 책은 한 번만).
+@riverpod
+Future<List<BookResponse>> myLibraryBooks(Ref ref) async {
+  final shelves = await ref.watch(myBookshelvesProvider.future);
+  final lists = await Future.wait([
+    for (final s in shelves) ref.watch(bookshelfBooksProvider(s.id).future),
+  ]);
+  final seen = <String>{};
+  return [
+    for (final list in lists)
+      for (final b in list)
+        if (seen.add(b.book.id)) b.book,
+  ];
 }
 
 /// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).

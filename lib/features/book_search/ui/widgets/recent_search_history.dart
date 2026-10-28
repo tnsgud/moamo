@@ -9,7 +9,10 @@ import '../../../../shared/theme/app_text_styles.dart';
 import '../../../../shared/widget/svg_icon.dart';
 
 class RecentSearchHistory extends ConsumerWidget {
-  const RecentSearchHistory({super.key});
+  const RecentSearchHistory({super.key, this.onSelected});
+
+  /// 검색어를 누르면 호출된다.
+  final ValueChanged<String>? onSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,10 +65,13 @@ class RecentSearchHistory extends ConsumerWidget {
                 itemBuilder: (context, index) => Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      data[index].keyword,
-                      style: AppTextStyles.btn2.copyWith(
-                        color: AppColors.neutral40,
+                    GestureDetector(
+                      onTap: () => onSelected?.call(data[index].keyword),
+                      child: Text(
+                        data[index].keyword,
+                        style: AppTextStyles.btn2.copyWith(
+                          color: AppColors.neutral40,
+                        ),
                       ),
                     ),
                     SizedBox(width: 2),

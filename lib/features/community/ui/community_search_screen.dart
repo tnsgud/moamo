@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/book_search/model/book.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/book_search/model/book_search_provider.dart';
+import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
+import 'package:moamo/features/library/ui/add_book_to_bookshelf.dart';
 import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
 import 'package:moamo/features/community/model/community_post.dart';
@@ -9,7 +12,6 @@ import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
-import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/widget/search_field.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
@@ -18,9 +20,9 @@ import 'widgets/post_list_item.dart';
 import 'widgets/section_title.dart';
 import 'widgets/sort_menu_button.dart';
 
-typedef _SearchBook = ({Book book, bool inLibrary});
+typedef _SearchBook = ({BookMetadata book, bool inLibrary});
 
-class CommunitySearchScreen extends StatefulWidget {
+class CommunitySearchScreen extends ConsumerStatefulWidget {
   const CommunitySearchScreen({super.key, required this.query});
 
   static String url = '/community/search';
@@ -28,57 +30,16 @@ class CommunitySearchScreen extends StatefulWidget {
   final String query;
 
   @override
-  State<CommunitySearchScreen> createState() => _CommunitySearchScreenState();
+  ConsumerState<CommunitySearchScreen> createState() =>
+      _CommunitySearchScreenState();
 }
 
-class _CommunitySearchScreenState extends State<CommunitySearchScreen> {
+class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
   static const _categories = ['전체', '자기계발서', '소설', '경제·경영서', '에세이'];
   static const _libraryTabs = ['내 책장', '전체 책장'];
   static const _sorts = ['최신순', '오래된 순', '인기순'];
 
-  // TODO: 서버 검색 결과로 교체
-  static final List<_SearchBook> _catalog = [
-    (
-      book: Book(
-        title: '아몬드',
-        author: '작가 손원평',
-        category: '소설',
-        imageUrl: '',
-        isCertification: true,
-      ),
-      inLibrary: true,
-    ),
-    (
-      book: Book(
-        title: '아몬드를 먹는 고양이',
-        author: '작가 손원평',
-        category: '소설',
-        imageUrl: '',
-        isCertification: false,
-      ),
-      inLibrary: true,
-    ),
-    (
-      book: Book(
-        title: '아몬드 초콜릿 왈츠',
-        author: '작가 손원평',
-        category: '소설',
-        imageUrl: '',
-        isCertification: true,
-      ),
-      inLibrary: true,
-    ),
-    (
-      book: Book(
-        title: '아몬드 한 줌의 습관',
-        author: '김아몬',
-        category: '자기계발서',
-        imageUrl: '',
-        isCertification: false,
-      ),
-      inLibrary: false,
-    ),
-  ];
+  // TODO: 게시글 API가 생기면 교체
   static const _posts = [
     CommunityPost(
       title: '곰이를 어떻게 생각하시나요?',
@@ -114,14 +75,24 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen> {
   }
 
   List<_SearchBook> get _bookResults {
-    final list = _catalog.where((e) {
-      final matches =
-          e.book.title.contains(_query) || e.book.author.contains(_query);
-      final inCategory =
-          _category == 0 || e.book.category == _categories[_category];
-      final inTab = !_showAllBooks || _libraryTab == 1 || e.inLibrary;
-      return matches && inCategory && inTab;
-    }).toList();
+    if (_query.isEmpty) return [];
+    final found = ref.watch(bookSearchProvider(_query)).value?.books ?? [];
+    final mine = {
+      for (final b in ref.watch(myLibraryBooksProvider).value ?? []) b.isbn,
+    };
+    final list = found
+        .map((b) => (book: b, inLibrary: mine.contains(b.isbn)))
+        .where((e) {
+          // ponytail: 분류 이름에 칩 글자가 들어있는지로만 거른다 (KDC 매핑 미정).
+          final inCategory =
+              _category == 0 ||
+              (e.book.classificationName ?? '').contains(
+                _categories[_category].replaceAll('서', ''),
+              );
+          final inTab = !_showAllBooks || _libraryTab == 1 || e.inLibrary;
+          return inCategory && inTab;
+        })
+        .toList();
 
     return _sort == 1 ? list.reversed.toList() : list;
   }
@@ -276,11 +247,24 @@ class _CommunitySearchScreenState extends State<CommunitySearchScreen> {
     ),
   );
 
+  /// 담을 책장을 고르게 하고 그 책장에 책을 담는다.
+  Future<void> _addToLibrary(BookMetadata book) async {
+    final shelf = await pickBookshelf(context, ref);
+    if (shelf == null || !mounted) return;
+    await addBookToBookshelf(
+      context,
+      ref,
+      bookshelfId: shelf.id,
+      shelfName: shelf.name,
+      isbn: book.isbn,
+    );
+  }
+
   Widget _bookItem(_SearchBook e) => BookListItem(
-    book: BookMetadata(isbn: 'sett', title: 'sdfdsf'),
+    book: e.book,
     trailing: BookActionMenu(
       isInLibrary: e.inLibrary,
-      onAdd: () => showAppToast(context, '내 책장에 추가되었습니다.'),
+      onAdd: () => _addToLibrary(e.book),
       onCertify: () => context.go('/certification'),
     ),
   );

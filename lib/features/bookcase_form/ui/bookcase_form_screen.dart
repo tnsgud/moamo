@@ -106,10 +106,10 @@ class BookcaseFormScreen extends ConsumerWidget {
                   bottom: MediaQuery.paddingOf(context).bottom + 24,
                 ),
                 children: [
-                  for (final (index, item) in (books ?? []).indexed)
+                  for (final item in books ?? [])
                     GestureDetector(
-                      // TODO: 책 상세 API 연결 시 bookshelfId·book.id로 이동
-                      onTap: () => context.push('/book/${index + 1}'),
+                      onTap: () =>
+                          context.push('/bookshelf/$id/book/${item.book.id}'),
                       child: BookInfoTile(
                         book: Book(
                           title: item.book.title,

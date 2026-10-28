@@ -19,3 +19,17 @@ Future<List<BookMetadata>> bookRecommendations(
   final res = await apiClient.books.getRelatedBooks(isbn: isbn, type: type);
   return res.data;
 }
+
+/// 공공도서관 대출 통계 기준 인기 도서 (최근 3개월).
+@riverpod
+Future<List<BookMetadata>> popularBooks(Ref ref) async {
+  final res = await apiClient.books.getPopularBooks(size: 10);
+  return res.data.books;
+}
+
+/// 책장에 담기 전 책 정보 (ISBN으로 외부 제공처 조회, DB 저장 안 함).
+@riverpod
+Future<BookMetadata> externalBook(Ref ref, String isbn) async {
+  final res = await apiClient.books.getExternalBookByIsbn(isbn: isbn);
+  return res.data;
+}

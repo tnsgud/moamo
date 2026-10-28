@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/book_detail/data/book_memos_provider.dart';
+import 'package:moamo/shared/api/export.dart';
+import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -7,17 +11,26 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/app_dialog.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
-class BookMemoScreen extends StatefulWidget {
-  const BookMemoScreen({super.key, required this.bookId});
+class BookMemoScreen extends ConsumerStatefulWidget {
+  const BookMemoScreen({
+    super.key,
+    required this.bookshelfId,
+    required this.bookId,
+    this.memoId,
+  });
 
-  final int bookId;
-  static String url = '/book/:id/memo';
+  final String bookshelfId;
+  final String bookId;
+
+  /// 있으면 수정, 없으면 새로 작성.
+  final String? memoId;
+  static String url = '/bookshelf/:bookshelfId/book/:bookId/memo';
 
   @override
-  State<BookMemoScreen> createState() => _BookMemoScreenState();
+  ConsumerState<BookMemoScreen> createState() => _BookMemoScreenState();
 }
 
-class _BookMemoScreenState extends State<BookMemoScreen> {
+class _BookMemoScreenState extends ConsumerState<BookMemoScreen> {
   static const _guides = [
     '책을 보면서 느꼈던 감상을 적어보세요.',
     '비공개로 설정하면 다른 사람에게 메모가 공개되지 않아요.',
@@ -28,8 +41,60 @@ class _BookMemoScreenState extends State<BookMemoScreen> {
   bool _isPrivate = false;
   // TODO: image_picker 연동 시 선택한 이미지로 교체
   bool _hasImage = false;
+  bool _saving = false;
+  final _content = TextEditingController();
 
-  void _save() {
+  @override
+  void initState() {
+    super.initState();
+    // 수정이면 상세 화면에서 받아 둔 메모 목록에서 꺼내 채운다.
+    final memo = ref
+        .read(bookMemosProvider(widget.bookshelfId, widget.bookId))
+        .value
+        ?.where((m) => m.id == widget.memoId)
+        .firstOrNull;
+    if (memo != null) {
+      _content.text = memo.content ?? '';
+      _isPrivate = memo.visibility == BookMemoVisibility.private;
+    }
+  }
+
+  @override
+  void dispose() {
+    _content.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final content = _content.text.trim();
+    // ponytail: 사진 업로드는 image_picker 연동 후. 지금은 글만 저장한다.
+    if (content.isEmpty) {
+      showAppToast(context, '내용을 입력해 주세요.', isError: true);
+      return;
+    }
+    final memos = ref.read(
+      bookMemosProvider(widget.bookshelfId, widget.bookId).notifier,
+    );
+    final visibility = _isPrivate
+        ? BookMemoVisibility.private
+        : BookMemoVisibility.public;
+
+    setState(() => _saving = true);
+    try {
+      final memoId = widget.memoId;
+      if (memoId == null) {
+        await memos.create(content: content, visibility: visibility);
+      } else {
+        await memos.edit(memoId, content: content, visibility: visibility);
+      }
+    } catch (_) {
+      if (mounted) showAppToast(context, '메모를 저장하지 못했어요.', isError: true);
+      return;
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (dialogContext) => AppDialog(
@@ -68,7 +133,7 @@ class _BookMemoScreenState extends State<BookMemoScreen> {
           ),
           actions: [
             GestureDetector(
-              onTap: _save,
+              onTap: _saving ? null : _save,
               child: SvgIcon(name: 'success', size: AppIconSizes.lg),
             ),
           ],
@@ -102,6 +167,7 @@ class _BookMemoScreenState extends State<BookMemoScreen> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _content,
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,

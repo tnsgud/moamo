@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/book_search/model/book_search_provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moamo/features/community/model/community_post.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -13,16 +15,17 @@ import 'widgets/monthly_library_list.dart';
 import 'widgets/popular_post_list.dart';
 import 'widgets/section_title.dart';
 
-class CommunityMainScreen extends StatefulWidget {
+class CommunityMainScreen extends ConsumerStatefulWidget {
   const CommunityMainScreen({super.key});
 
   static String url = '/community';
 
   @override
-  State<CommunityMainScreen> createState() => _CommunityMainScreenState();
+  ConsumerState<CommunityMainScreen> createState() =>
+      _CommunityMainScreenState();
 }
 
-class _CommunityMainScreenState extends State<CommunityMainScreen> {
+class _CommunityMainScreenState extends ConsumerState<CommunityMainScreen> {
   static const _tabs = ['커뮤니티', '모임/북콘서트'];
   // TODO: 서버 데이터로 교체
   static const _popularPosts = [
@@ -85,6 +88,8 @@ class _CommunityMainScreenState extends State<CommunityMainScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final popular = ref.watch(popularBooksProvider).value;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -120,7 +125,13 @@ class _CommunityMainScreenState extends State<CommunityMainScreen> {
                         bookTitle: '해리포터와 마법사의 돌',
                       ),
                       SizedBox(height: 32),
-                      BookCoverList(title: 'HOT 책 커뮤니티', titles: _bookTitles),
+                      BookCoverList(
+                        title: 'HOT 책 커뮤니티',
+                        titles: [for (final b in popular ?? []) b.title],
+                        coverUrls: [
+                          for (final b in popular ?? []) b.coverImageUrl,
+                        ],
+                      ),
                       SizedBox(height: 32),
                       BookCoverList(
                         title: 'X세대가 MZ에게 추천하는 책',

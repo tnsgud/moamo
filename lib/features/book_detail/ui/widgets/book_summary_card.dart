@@ -10,14 +10,12 @@ class BookSummaryCard extends StatelessWidget {
   const BookSummaryCard({
     super.key,
     required this.book,
-    required this.pages,
     required this.description,
     required this.isExpanded,
     required this.onToggle,
   });
 
   final Book book;
-  final int pages;
   final String description;
   final bool isExpanded;
   final VoidCallback onToggle;
@@ -37,10 +35,14 @@ class BookSummaryCard extends StatelessWidget {
           Container(
             width: 68,
             height: 83,
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppColors.neutral50,
               borderRadius: AppRadius.xxs,
             ),
+            child: book.imageUrl.isEmpty
+                ? null
+                : Image.network(book.imageUrl, fit: BoxFit.cover),
           ),
           SizedBox(width: 12),
           Expanded(
@@ -52,19 +54,14 @@ class BookSummaryCard extends StatelessWidget {
                     Expanded(
                       child: Row(
                         children: [
-                          Text(
-                            book.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyles.body1Bold.copyWith(
-                              color: AppColors.neutral90,
-                            ),
-                          ),
-                          SizedBox(width: 4),
-                          Text(
-                            '(${pages}p)',
-                            style: AppTextStyles.caption1.copyWith(
-                              color: AppColors.neutral50,
+                          Flexible(
+                            child: Text(
+                              book.title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTextStyles.body1Bold.copyWith(
+                                color: AppColors.neutral90,
+                              ),
                             ),
                           ),
                         ],

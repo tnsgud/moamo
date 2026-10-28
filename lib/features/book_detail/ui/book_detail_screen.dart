@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/book_detail/model/book_memo.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/book_detail/data/book_memos_provider.dart';
+import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
+import 'package:moamo/features/library/ui/add_book_to_bookshelf.dart';
+import 'package:moamo/shared/api/export.dart';
+import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
@@ -13,40 +18,50 @@ import 'widgets/book_summary_card.dart';
 import 'widgets/certification_tab.dart';
 import 'widgets/memo_tab.dart';
 
-class BookDetailScreen extends StatefulWidget {
-  const BookDetailScreen({super.key, required this.id});
+class BookDetailScreen extends ConsumerStatefulWidget {
+  const BookDetailScreen({
+    super.key,
+    required this.bookshelfId,
+    required this.bookId,
+  });
 
-  final int id;
-  static String url = '/book/:id';
+  final String bookshelfId;
+
+  /// ISBN이 아니라 `book.id`.
+  final String bookId;
+  static String url = '/bookshelf/:bookshelfId/book/:bookId';
 
   @override
-  State<BookDetailScreen> createState() => _BookDetailScreenState();
+  ConsumerState<BookDetailScreen> createState() => _BookDetailScreenState();
 }
 
-class _BookDetailScreenState extends State<BookDetailScreen> {
-  // TODO: id로 책 정보를 조회하도록 교체
-  static const _book = Book(
-    title: '해리포터와 마법사의 돌',
-    author: '조앤 K.롤링',
-    category: '소설',
-    imageUrl: '',
-    isCertification: false,
-  );
-  static const _description =
-      '1997년 영국에서 출간된 이래 <해리포터> 시리즈는 지금까지 200개국 이상 80개의 언어로 번역되고 출간되어 5억 부 이상을 판매했다. 이번에 출간하는 <해리포터> 시리즈는 지난 2019년에 새로운 번역을 선보인 버전이다.';
-  static const _bookcases = ['책장 1', '책장 2', '책장 3'];
+class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   static const _tabs = ['메모', '인증'];
 
   bool _isExpanded = false;
-  int _bookcase = 0;
   int _tab = 0;
-  final List<BookMemo> _memos = [
-    BookMemo(date: '26/08/23', content: '스투페파이!!', hasImage: true),
-    BookMemo(date: '26/08/23', content: '아니 나도 날아다니고 싶다'),
-  ];
+
+  /// 다른 책장을 고르면 그 책장에도 같은 책(ISBN)을 담는다.
+  Future<void> _addToBookshelf(BookshelfResponse shelf, String isbn) =>
+      addBookToBookshelf(
+        context,
+        ref,
+        bookshelfId: shelf.id,
+        shelfName: shelf.name,
+        isbn: isbn,
+      );
 
   @override
   Widget build(BuildContext context) {
+    final item = ref
+        .watch(bookshelfBookProvider(widget.bookshelfId, widget.bookId))
+        .value;
+    final shelves = ref.watch(myBookshelvesProvider).value ?? [];
+    final selected = shelves.indexWhere((s) => s.id == widget.bookshelfId);
+    final memos = ref.watch(
+      bookMemosProvider(widget.bookshelfId, widget.bookId),
+    );
+
     return Column(
       children: [
         AppBar(
@@ -64,9 +79,14 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             child: Column(
               children: [
                 BookSummaryCard(
-                  book: _book,
-                  pages: 456,
-                  description: _description,
+                  book: Book(
+                    title: item?.book.title ?? '',
+                    author: item?.book.authors ?? '',
+                    category: item?.book.classificationName ?? '',
+                    imageUrl: item?.book.coverImageUrl ?? '',
+                    isCertification: false,
+                  ),
+                  description: item?.book.description ?? '',
                   isExpanded: _isExpanded,
                   onToggle: () => setState(() => _isExpanded = !_isExpanded),
                 ),
@@ -80,11 +100,16 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         color: AppColors.neutral90,
                       ),
                     ),
-                    BookcaseSelectButton(
-                      bookcases: _bookcases,
-                      selected: _bookcase,
-                      onSelected: (i) => setState(() => _bookcase = i),
-                    ),
+                    if (selected >= 0)
+                      BookcaseSelectButton(
+                        bookcases: [for (final s in shelves) s.name],
+                        selected: selected,
+                        onSelected: (i) {
+                          if (i != selected && item != null) {
+                            _addToBookshelf(shelves[i], item.book.isbn);
+                          }
+                        },
+                      ),
                   ],
                 ),
                 SizedBox(height: 24),
@@ -105,9 +130,29 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 SizedBox(height: 24),
                 if (_tab == 0)
                   MemoTab(
-                    bookId: widget.id,
-                    memos: _memos,
-                    onDelete: (memo) => setState(() => _memos.remove(memo)),
+                    memoUrl:
+                        '/bookshelf/${widget.bookshelfId}/book/${widget.bookId}/memo',
+                    memos: memos.value ?? [],
+                    onDelete: (memo) async {
+                      try {
+                        await ref
+                            .read(
+                              bookMemosProvider(
+                                widget.bookshelfId,
+                                widget.bookId,
+                              ).notifier,
+                            )
+                            .delete(memo.id);
+                      } catch (_) {
+                        if (context.mounted) {
+                          showAppToast(
+                            context,
+                            '메모를 삭제하지 못했어요.',
+                            isError: true,
+                          );
+                        }
+                      }
+                    },
                   )
                 else
                   CertificationTab(),

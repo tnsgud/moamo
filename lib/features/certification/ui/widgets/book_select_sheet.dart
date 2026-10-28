@@ -104,14 +104,17 @@ class _BookCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // TODO: 책 표지 이미지로 교체
           Container(
             width: 68,
             height: 83,
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: AppColors.neutral50,
               borderRadius: AppRadius.xxs,
             ),
+            child: book.imageUrl.isEmpty
+                ? null
+                : Image.network(book.imageUrl, fit: BoxFit.cover),
           ),
           SizedBox(width: 12),
           Column(

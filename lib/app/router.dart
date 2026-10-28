@@ -4,6 +4,8 @@ import 'package:moamo/features/auth/ui/login_screen.dart';
 import 'package:moamo/features/book_search/ui/book_search_screen.dart';
 import 'package:moamo/features/book_detail/ui/book_detail_screen.dart';
 import 'package:moamo/features/book_detail/ui/book_memo_screen.dart';
+import 'package:moamo/features/book_detail/ui/book_preview_screen.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/features/bookcase_decorate/ui/bookcase_decorate_screen.dart';
 import 'package:moamo/features/bookcase_list/ui/bookcase_list_screen.dart';
 import 'package:moamo/features/certification/ui/certification_screen.dart';
@@ -52,13 +54,25 @@ final appRouter = GoRouter(
             ),
             GoRoute(
               path: BookDetailScreen.url,
-              builder: (context, state) =>
-                  BookDetailScreen(id: int.parse(state.pathParameters['id']!)),
+              builder: (context, state) => BookDetailScreen(
+                bookshelfId: state.pathParameters['bookshelfId']!,
+                bookId: state.pathParameters['bookId']!,
+              ),
+            ),
+            GoRoute(
+              path: BookPreviewScreen.url,
+              builder: (context, state) => BookPreviewScreen(
+                isbn: state.pathParameters['isbn']!,
+                bookshelfId: state.uri.queryParameters['bookshelfId'],
+                initial: state.extra as BookMetadata?,
+              ),
             ),
             GoRoute(
               path: BookMemoScreen.url,
               builder: (context, state) => BookMemoScreen(
-                bookId: int.parse(state.pathParameters['id']!),
+                bookshelfId: state.pathParameters['bookshelfId']!,
+                bookId: state.pathParameters['bookId']!,
+                memoId: state.uri.queryParameters['memoId'],
               ),
             ),
             GoRoute(

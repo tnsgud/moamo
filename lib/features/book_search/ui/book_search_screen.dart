@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
 import 'package:moamo/features/book_search/model/book_search_provider.dart';
 import 'package:moamo/features/book_search/model/recent_book_search_history_provider.dart';
 import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
@@ -14,8 +12,9 @@ import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
-import 'package:moamo/shared/widget/app_toast.dart';
+import 'package:moamo/shared/widget/book_info_tile.dart';
 import 'package:moamo/shared/widget/search_field.dart';
+import 'package:moamo/features/book_search/model/book.dart';
 
 class BookSearchScreen extends ConsumerStatefulWidget {
   const BookSearchScreen({super.key, this.bookshelfId});
@@ -31,6 +30,19 @@ class BookSearchScreen extends ConsumerStatefulWidget {
 
 class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
   String query = '';
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
+  /// 최근 검색어를 검색창에 넣는다 (커서는 끝으로).
+  void _fill(String keyword) => _search.value = TextEditingValue(
+    text: keyword,
+    selection: TextSelection.collapsed(offset: keyword.length),
+  );
 
   void _submit(String value) {
     final keyword = value.trim();
@@ -41,81 +53,78 @@ class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
     setState(() => query = keyword);
   }
 
-  Future<void> _addToBookshelf(String bookshelfId, BookMetadata book) async {
-    try {
-      await ref
-          .read(bookshelfBooksProvider(bookshelfId).notifier)
-          .add(book.isbn);
-      if (!mounted) return;
-      showAppToast(context, '책장에 담았어요.');
-      context.pop();
-    } on DioException catch (e) {
-      if (!mounted) return;
-      showAppToast(
-        context,
-        e.response?.statusCode == 409 ? '이미 책장에 있는 책이에요.' : '책을 담지 못했어요.',
-        isError: true,
-      );
-    }
+  /// 책 상세(담기 전)를 연다. 책장 편집에서 왔고 거기서 담았으면
+  /// 검색 화면도 닫아서 책장 편집 화면으로 돌아간다.
+  Future<void> _openBook(BookMetadata book) async {
+    final bookshelfId = widget.bookshelfId;
+    final added = await context.push<bool>(
+      bookshelfId == null
+          ? '/book/isbn/${book.isbn}'
+          : '/book/isbn/${book.isbn}?bookshelfId=$bookshelfId',
+      extra: book,
+    );
+    if (added == true && bookshelfId != null && mounted) context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bookshelfId = widget.bookshelfId;
-
-    if (query.isNotEmpty) {
-      ref
-          .watch(bookSearchProvider(query))
-          .when(
-            data: (data) {
-              // data.books.map((b) => b.)
-              ref.watch(bookRecommendationsProvider(data.books[0].isbn));
-            },
-            error: (error, _) => print('error:$error'),
-            loading: () {},
-          );
-    }
+    final books = query.isEmpty
+        ? <BookMetadata>[]
+        : ref.watch(bookSearchProvider(query)).value?.books ?? [];
+    // 첫 번째 검색 결과와 함께 읽으면 좋은 책.
+    final recommendations = books.isEmpty
+        ? <BookMetadata>[]
+        : ref.watch(bookRecommendationsProvider(books.first.isbn)).value ?? [];
 
     return SingleChildScrollView(
       child: Column(
         children: [
           BookSearchAppBar(),
-          SearchField(onSubmitted: (value) => _submit(value)),
+          SearchField(
+            controller: _search,
+            onSubmitted: (value) => _submit(value),
+          ),
           SizedBox(height: 24),
-          RecentSearchHistory(),
+          RecentSearchHistory(onSelected: _fill),
           SizedBox(height: 24),
           AppChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
           SizedBox(height: 32),
           BookList(
             title: '',
             action: SortButton(),
-            onTap: bookshelfId == null
-                ? null
-                : (book) => _addToBookshelf(bookshelfId, book),
-            data: query.isEmpty
-                ? []
-                : ref
-                      .watch(bookSearchProvider(query))
-                      .when(
-                        data: (data) => data.books,
-                        loading: () => [],
-                        error: (error, _) => [],
-                      ),
+            onTap: _openBook,
+            data: books,
           ),
-          Text(
-            '함께 하면 좋을 책',
-            style: AppTextStyles.subtitleBold.copyWith(
-              color: AppColors.neutral90,
+          if (recommendations.isNotEmpty) ...[
+            Text(
+              '함께 하면 좋을 책',
+              style: AppTextStyles.subtitleBold.copyWith(
+                color: AppColors.neutral90,
+              ),
             ),
-          ),
-          GridView.count(
-            crossAxisCount: 4,
-            crossAxisSpacing: 25,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisExtent: 130,
-            children: [],
-          ),
+            GridView.count(
+              crossAxisCount: 4,
+              crossAxisSpacing: 25,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisExtent: 130,
+              children: [
+                for (final b in recommendations)
+                  GestureDetector(
+                    onTap: () => _openBook(b),
+                    child: BookInfoTile(
+                      book: Book(
+                        title: b.title,
+                        author: b.authors ?? '',
+                        category: b.classificationName ?? '',
+                        imageUrl: b.coverImageUrl ?? '',
+                        isCertification: false,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
         ],
       ),
     );

@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
+import 'package:moamo/shared/theme/hex_color.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 import 'widgets/create_bookcase.dart';
@@ -39,7 +41,18 @@ class LibraryHomeScreen extends ConsumerWidget {
                     final shelf = shelves[index];
                     return GestureDetector(
                       onTap: () => context.push('/bookcase/${shelf.id}/edit'),
-                      child: Bookcase(title: shelf.name),
+                      child: Bookcase(
+                        title: shelf.name,
+                        color: hexToColor(shelf.coverColor),
+                        bookTitles: [
+                          for (final b
+                              in ref
+                                      .watch(bookshelfBooksProvider(shelf.id))
+                                      .value ??
+                                  <BookshelfBookResponse>[])
+                            b.book.title,
+                        ],
+                      ),
                     );
                   },
                 ),

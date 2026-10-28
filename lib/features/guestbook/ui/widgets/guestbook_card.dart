@@ -7,9 +7,16 @@ import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class GuestbookCard extends StatelessWidget {
-  const GuestbookCard({super.key, required this.entry});
+  const GuestbookCard({
+    super.key,
+    required this.entry,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final GuestbookEntry entry;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +64,7 @@ class GuestbookCard extends StatelessWidget {
                   ],
                 ),
               ),
-              _menu(mine),
+              if (entry.canEdit || entry.canDelete) _menu(mine),
             ],
           ),
           SizedBox(height: 16),
@@ -94,10 +101,11 @@ class GuestbookCard extends StatelessWidget {
     padding: EdgeInsets.zero,
     color: AppColors.neutral05,
     shape: RoundedRectangleBorder(borderRadius: AppRadius.md),
-    onSelected: (value) {},
+    onSelected: (value) =>
+        value == 'delete' ? onDelete?.call() : onEdit?.call(),
     itemBuilder: (context) => [
-      _menuItem('delete', '삭제', 'delete'),
-      _menuItem('edit', '수정', 'write'),
+      if (entry.canDelete) _menuItem('delete', '삭제', 'delete'),
+      if (entry.canEdit) _menuItem('edit', '수정', 'write'),
     ],
     child: SvgIcon(
       name: 'kebab',

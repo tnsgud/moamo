@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:moamo/features/book_search/ui/widgets/book_list_item.dart';
 import 'package:moamo/shared/api/models/book_metadata.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -18,7 +17,7 @@ class BookList extends StatelessWidget {
   final Widget? action;
   final List<BookMetadata> data;
 
-  /// 지정하면 상세 화면 이동 대신 호출된다.
+  /// 결과를 눌렀을 때 호출된다 (예: 담기 전 상세 열기).
   final ValueChanged<BookMetadata>? onTap;
 
   @override
@@ -61,9 +60,7 @@ class BookList extends StatelessWidget {
           for (var i = 0; i < data.length; i++) ...[
             if (i > 0) SizedBox(height: 20),
             GestureDetector(
-              onTap: onTap != null
-                  ? () => onTap!(data[i])
-                  : () => context.push('/book/${i + 1}'),
+              onTap: onTap == null ? null : () => onTap!(data[i]),
               child: BookListItem(book: data[i]),
             ),
           ],

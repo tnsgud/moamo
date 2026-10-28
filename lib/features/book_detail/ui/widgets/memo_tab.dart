@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moamo/features/book_detail/model/book_memo.dart';
+import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -13,16 +13,17 @@ import 'memo_card.dart';
 class MemoTab extends StatelessWidget {
   const MemoTab({
     super.key,
-    required this.bookId,
+    required this.memoUrl,
     required this.memos,
     required this.onDelete,
   });
 
-  final int bookId;
-  final List<BookMemo> memos;
-  final ValueChanged<BookMemo> onDelete;
+  /// 메모 작성 화면 경로. 수정은 뒤에 `?memoId=`를 붙인다.
+  final String memoUrl;
+  final List<BookMemoResponse> memos;
+  final ValueChanged<BookMemoResponse> onDelete;
 
-  void _confirmDelete(BuildContext context, BookMemo memo) {
+  void _confirmDelete(BuildContext context, BookMemoResponse memo) {
     showDialog(
       context: context,
       builder: (dialogContext) => AppDialog(
@@ -58,7 +59,7 @@ class MemoTab extends StatelessWidget {
               style: AppTextStyles.btn2.copyWith(color: AppColors.neutral90),
             ),
             GestureDetector(
-              onTap: () => context.push('/book/$bookId/memo'),
+              onTap: () => context.push(memoUrl),
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                 decoration: BoxDecoration(
@@ -95,7 +96,7 @@ class MemoTab extends StatelessWidget {
         for (final memo in memos) ...[
           MemoCard(
             memo: memo,
-            onEdit: () => context.push('/book/$bookId/memo'),
+            onEdit: () => context.push('$memoUrl?memoId=${memo.id}'),
             onDelete: () => _confirmDelete(context, memo),
           ),
           SizedBox(height: 12),

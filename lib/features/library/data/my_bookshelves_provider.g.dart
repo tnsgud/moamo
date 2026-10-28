@@ -152,6 +152,96 @@ final class BookshelfFamily extends $Family
   String toString() => r'bookshelfProvider';
 }
 
+/// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+
+@ProviderFor(bookshelfBook)
+final bookshelfBookProvider = BookshelfBookFamily._();
+
+/// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+
+final class BookshelfBookProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<BookshelfBookResponse>,
+          BookshelfBookResponse,
+          FutureOr<BookshelfBookResponse>
+        >
+    with
+        $FutureModifier<BookshelfBookResponse>,
+        $FutureProvider<BookshelfBookResponse> {
+  /// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+  BookshelfBookProvider._({
+    required BookshelfBookFamily super.from,
+    required (String, String) super.argument,
+  }) : super(
+         retry: null,
+         name: r'bookshelfBookProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$bookshelfBookHash();
+
+  @override
+  String toString() {
+    return r'bookshelfBookProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<BookshelfBookResponse> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<BookshelfBookResponse> create(Ref ref) {
+    final argument = this.argument as (String, String);
+    return bookshelfBook(ref, argument.$1, argument.$2);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BookshelfBookProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$bookshelfBookHash() => r'df53b278a87620a8cd2689aafdd2641577cee48e';
+
+/// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+
+final class BookshelfBookFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+          FutureOr<BookshelfBookResponse>,
+          (String, String)
+        > {
+  BookshelfBookFamily._()
+    : super(
+        retry: null,
+        name: r'bookshelfBookProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 책장 안의 책 한 권 상세. [bookId]는 ISBN이 아니라 `book.id`.
+
+  BookshelfBookProvider call(String bookshelfId, String bookId) =>
+      BookshelfBookProvider._(argument: (bookshelfId, bookId), from: this);
+
+  @override
+  String toString() => r'bookshelfBookProvider';
+}
+
 /// 책장 안의 책 목록.
 
 @ProviderFor(BookshelfBooks)
@@ -260,6 +350,52 @@ abstract class _$BookshelfBooks
     return element.handleCreate(ref, () => build(_$args));
   }
 }
+
+/// 내 모든 책장의 책 (같은 책은 한 번만).
+
+@ProviderFor(myLibraryBooks)
+final myLibraryBooksProvider = MyLibraryBooksProvider._();
+
+/// 내 모든 책장의 책 (같은 책은 한 번만).
+
+final class MyLibraryBooksProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<BookResponse>>,
+          List<BookResponse>,
+          FutureOr<List<BookResponse>>
+        >
+    with
+        $FutureModifier<List<BookResponse>>,
+        $FutureProvider<List<BookResponse>> {
+  /// 내 모든 책장의 책 (같은 책은 한 번만).
+  MyLibraryBooksProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'myLibraryBooksProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$myLibraryBooksHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<BookResponse>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<BookResponse>> create(Ref ref) {
+    return myLibraryBooks(ref);
+  }
+}
+
+String _$myLibraryBooksHash() => r'24489bae320dc3c21373850cab4c2c00f2fb9258';
 
 /// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
 

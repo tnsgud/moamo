@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
+import 'package:moamo/shared/api/export.dart';
+import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/features/book_detail/ui/widgets/certification_tab.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
@@ -9,32 +13,39 @@ import 'package:moamo/shared/widget/svg_icon.dart';
 
 import 'widgets/book_select_sheet.dart';
 
-class CertificationScreen extends StatefulWidget {
+class CertificationScreen extends ConsumerStatefulWidget {
   const CertificationScreen({super.key});
 
   static String url = '/certification';
 
   @override
-  State<CertificationScreen> createState() => _CertificationScreenState();
+  ConsumerState<CertificationScreen> createState() =>
+      _CertificationScreenState();
 }
 
-class _CertificationScreenState extends State<CertificationScreen> {
-  // TODO: 내 서재 데이터로 교체
-  static final _books = List.generate(
-    6,
-    (_) => Book(
-      title: '해리포터와 마법사의 돌',
-      author: '조앤 K.롤링',
-      category: '소설',
-      imageUrl: '',
-      isCertification: false,
-    ),
-  );
-
+class _CertificationScreenState extends ConsumerState<CertificationScreen> {
   Book? _selected;
 
   Future<void> _selectBook() async {
-    final book = await showBookSelectSheet(context, _books);
+    final List<BookResponse> library;
+    try {
+      library = await ref.read(myLibraryBooksProvider.future);
+    } catch (_) {
+      if (mounted) showAppToast(context, '내 서재를 불러오지 못했어요.', isError: true);
+      return;
+    }
+    if (!mounted) return;
+    final books = [
+      for (final b in library)
+        Book(
+          title: b.title,
+          author: b.authors ?? '',
+          category: b.classificationName ?? '',
+          imageUrl: b.coverImageUrl ?? '',
+          isCertification: false,
+        ),
+    ];
+    final book = await showBookSelectSheet(context, books);
     if (book != null) setState(() => _selected = book);
   }
 

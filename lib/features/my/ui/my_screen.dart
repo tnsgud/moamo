@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/auth/data/current_member_provider.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
@@ -10,13 +12,15 @@ import 'widgets/my_stat_rows.dart';
 import 'widgets/profile_header.dart';
 import 'widgets/support_menu.dart';
 
-class MyScreen extends StatelessWidget {
+class MyScreen extends ConsumerWidget {
   const MyScreen({super.key});
 
   static String url = '/my';
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final nickname = ref.watch(currentMemberProvider).value?.nickname ?? '';
+
     return Column(
       children: [
         AppBar(
@@ -37,8 +41,7 @@ class MyScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 16),
-                // TODO: 사용자 정보로 교체
-                ProfileHeader(nickname: '새숭새숭27'),
+                ProfileHeader(nickname: nickname),
                 SizedBox(height: 24),
                 BananaCard(count: 42),
                 SizedBox(height: 24),

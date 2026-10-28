@@ -5,9 +5,18 @@ import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class Bookcase extends StatelessWidget {
-  const Bookcase({super.key, required this.title});
+  const Bookcase({
+    super.key,
+    required this.title,
+    required this.color,
+    required this.bookTitles,
+  });
 
   final String title;
+
+  /// 책장 표지 색상.
+  final Color color;
+  final List<String> bookTitles;
 
   @override
   Widget build(BuildContext context) {
@@ -35,33 +44,21 @@ class Bookcase extends StatelessWidget {
             ),
           ),
           SizedBox(height: 24),
-          Row(
-            children: [
-              LibraryBook(
-                title: '해리포터와 마법사의 돌',
-                isExtended: true,
-                color: AppColors.yellow200,
-              ),
-              SizedBox(width: 8),
-              LibraryBook(
-                title: '해리포터와 마법사의 돌',
-                isExtended: false,
-                color: AppColors.yellow,
-              ),
-              SizedBox(width: 8),
-              LibraryBook(
-                title: '해리포터와 마법사의 돌',
-                isExtended: false,
-                color: AppColors.yellow800,
-              ),
-              SizedBox(width: 8),
-              LibraryBook(
-                title: '해리포터와 마법사의 돌',
-                isExtended: false,
-                color: AppColors.yellow600,
-              ),
-            ],
-          ),
+          if (bookTitles.isEmpty)
+            Text(
+              '아직 담긴 책이 없어요.',
+              style: AppTextStyles.body2.copyWith(color: AppColors.neutral50),
+            )
+          else
+            Row(
+              children: [
+                // 첫 책은 앞표지, 나머지는 책등. 한 줄에 들어가도록 6권까지.
+                for (final (i, t) in bookTitles.take(6).indexed) ...[
+                  if (i > 0) SizedBox(width: 8),
+                  LibraryBook(title: t, isExtended: i == 0, color: color),
+                ],
+              ],
+            ),
         ],
       ),
     );
