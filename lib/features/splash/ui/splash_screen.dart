@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/auth/data/auth_service.dart';
 import 'package:moamo/features/auth/ui/login_screen.dart';
+import 'package:moamo/features/library/ui/library_home_screen.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
@@ -21,11 +23,17 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     FlutterNativeSplash.remove();
-    Future.delayed(splashScreenDuration, () {
-      if (mounted) {
-        context.go(LoginScreen.url);
-      }
-    });
+    _start();
+  }
+
+  /// 스플래시를 보여주는 동안 저장된 카카오 토큰으로 자동 로그인을 시도한다.
+  Future<void> _start() async {
+    final (token, _) = await (
+      restoreSession(),
+      Future.delayed(splashScreenDuration),
+    ).wait;
+    if (!mounted) return;
+    context.go(token != null ? LibraryHomeScreen.url : LoginScreen.url);
   }
 
   @override
