@@ -10,11 +10,15 @@ class CoverColorPicker extends StatelessWidget {
     required this.colors,
     required this.selected,
     required this.onSelected,
+    required this.onPaletteTap,
   });
 
   final List<Color> colors;
   final int selected;
   final ValueChanged<int> onSelected;
+
+  /// 오른쪽 아이콘을 누르면 호출 (팔레트 선택 시트 열기).
+  final VoidCallback onPaletteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +50,10 @@ class CoverColorPicker extends StatelessWidget {
                   ),
                 ),
               ),
-            SvgIcon(name: 'down', size: AppIconSizes.md),
+            GestureDetector(
+              onTap: onPaletteTap,
+              child: SvgIcon(name: 'down', size: AppIconSizes.md),
+            ),
           ],
         ),
       ],

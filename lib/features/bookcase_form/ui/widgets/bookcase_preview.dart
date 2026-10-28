@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -9,13 +9,23 @@ class BookcasePreview extends StatelessWidget {
   const BookcasePreview({
     super.key,
     required this.title,
-    this.id,
     required this.onTap,
+    this.color,
+    this.bookTitles = const [],
+    this.templateName,
   });
 
   final String title;
-  final String? id;
   final VoidCallback onTap;
+
+  /// 꾸미기에서 저장한 표지 색상.
+  final Color? color;
+
+  /// 꾸미기에서 고른 책 제목 (slot 순). 비어 있으면 안내 문구를 보여준다.
+  final List<String> bookTitles;
+
+  /// 적용된 템플릿 이름. null이면 아직 책장이 없는 것.
+  final String? templateName;
 
   @override
   Widget build(BuildContext context) {
@@ -67,24 +77,56 @@ class BookcasePreview extends StatelessWidget {
           ),
           SizedBox(height: 24),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  '선택된 템플릿이 없어요.',
-                  style: AppTextStyles.btn2.copyWith(
-                    color: AppColors.neutral50,
+            child: bookTitles.isEmpty
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        templateName == null
+                            ? '선택된 템플릿이 없어요.'
+                            : '$templateName 템플릿이 적용됐어요.',
+                        style: AppTextStyles.btn2.copyWith(
+                          color: AppColors.neutral50,
+                        ),
+                      ),
+                      Text(
+                        '나만의 책장을 꾸며보세요!',
+                        style: AppTextStyles.caption1.copyWith(
+                          color: AppColors.neutral40,
+                        ),
+                      ),
+                    ],
+                  )
+                // 첫 책은 앞표지, 나머지는 책등 (꾸미기 미리보기와 같은 배치).
+                : Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      for (final (i, t) in bookTitles.indexed) ...[
+                        if (i > 0) SizedBox(width: 8),
+                        Container(
+                          width: i == 0 ? 48 : 12,
+                          height: 60,
+                          padding: EdgeInsets.all(4),
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: color ?? AppColors.blue200,
+                            borderRadius: AppRadius.xxs,
+                          ),
+                          child: i == 0
+                              ? Text(
+                                  t,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: AppTextStyles.caption2.copyWith(
+                                    color: AppColors.neutral90,
+                                  ),
+                                )
+                              : null,
+                        ),
+                      ],
+                    ],
                   ),
-                ),
-                Text(
-                  '나만의 책장을 꾸며보세요!',
-                  style: AppTextStyles.caption1.copyWith(
-                    color: AppColors.neutral40,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

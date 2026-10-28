@@ -5,26 +5,40 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class BookInfoTile extends StatelessWidget {
-  const BookInfoTile({super.key, required this.book});
+  const BookInfoTile({super.key, required this.book, this.coverOverlay});
 
   final Book book;
+
+  /// 표지 위에 겹쳐 그릴 위젯 (예: 선택 표시).
+  final Widget? coverOverlay;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          height: 80,
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            color: AppColors.blue,
-            borderRadius: AppRadius.xxs,
-          ),
-          child: book.imageUrl.isEmpty
-              ? null
-              : Image.network(book.imageUrl, fit: BoxFit.cover),
+        Stack(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 80,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppColors.blue,
+                borderRadius: AppRadius.xxs,
+              ),
+              child: book.imageUrl.isEmpty
+                  ? null
+                  : Image.network(book.imageUrl, fit: BoxFit.cover),
+            ),
+            if (coverOverlay != null)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: AppRadius.xxs,
+                  child: coverOverlay,
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 8),
         Text(

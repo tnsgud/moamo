@@ -22,6 +22,8 @@ abstract final class AppColors {
 
   // Status
   static const notification = Color(0xFFF63939);
+  // 선택 테두리 (색상 팔레트 시안에서 추출, 디자인 토큰 확정 필요)
+  static const focus = Color(0xFF3D8FE4);
 
   // Book Colors
   // Yellow

@@ -22,5 +22,12 @@ Future<void> main() async {
   // 서비스 토큰(15분)이 만료되면 저장된 카카오 토큰으로 다시 받는다.
   onRefreshToken = restoreSession;
   onSessionExpired = () => appRouter.go(LoginScreen.url);
-  runApp(const ProviderScope(child: Moamo()));
+  runApp(
+    ProviderScope(
+      // 실패한 요청을 자동으로 계속 재시도하지 않는다 (서버 502 때 요청 폭주 방지).
+      // 화면의 "다시 시도"나 다시 들어올 때 새로 불러온다.
+      retry: (_, _) => null,
+      child: const Moamo(),
+    ),
+  );
 }

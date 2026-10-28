@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import 'package:moamo/features/bookcase_decorate/model/bookshelf_template.dart';
 import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/network/api_client.dart';
 
@@ -14,10 +15,13 @@ class MyBookshelves extends _$MyBookshelves {
     return res.data;
   }
 
-  /// 빈 책장을 만들고 생성된 책장을 돌려준다.
+  /// 기본 템플릿을 적용한 빈 책장을 만들고 생성된 책장을 돌려준다.
   Future<BookshelfResponse> create(String name) async {
     final res = await apiClient.bookshelf.createMyBookshelf(
-      body: BookshelfCreateRequest(name: name),
+      body: BookshelfCreateRequest(
+        name: name,
+        templateKey: bookshelfTemplates.first.$1,
+      ),
     );
     ref.invalidateSelf();
     return res.data;
@@ -82,8 +86,10 @@ class BookshelfBooks extends _$BookshelfBooks {
   }
 
   // 책 수가 바뀌므로 책장 요약·목록도 다시 불러온다.
+  // 책을 빼면 서버가 미리보기 배치에서도 빼므로 꾸미기도 다시 불러온다.
   void _invalidate() {
     ref.invalidateSelf();
+    ref.invalidate(bookshelfDecorationProvider(bookshelfId));
     ref.invalidate(bookshelfProvider(bookshelfId));
     ref.invalidate(myBookshelvesProvider);
   }

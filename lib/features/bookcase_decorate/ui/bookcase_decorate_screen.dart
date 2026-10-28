@@ -17,6 +17,10 @@ import 'package:moamo/shared/widget/app_button.dart';
 import 'package:moamo/shared/widget/book_info_tile.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
+import 'package:flutter/services.dart';
+import 'package:moamo/features/bookcase_decorate/model/bookshelf_template.dart';
+
+import 'widgets/color_palette_sheet.dart';
 import 'widgets/cover_color_picker.dart';
 import 'widgets/decorate_preview.dart';
 
@@ -34,29 +38,38 @@ class BookcaseDecorateScreen extends ConsumerStatefulWidget {
 
 class _BookcaseDecorateScreenState
     extends ConsumerState<BookcaseDecorateScreen> {
-  // 템플릿 키는 프런트 자산 식별값이라 여기서 정한다. 서버 기본값은 DEFAULT.
-  static const _templates = [
-    ('DEFAULT', '기본'),
-    ('FULL', '책 한가득'),
-    ('SUMMER', '여름 책장'),
-    ('MINIMAL', '미니멀'),
-    ('MAXIMAL', '맥시멀'),
-  ];
-
-  static const _colors = [
-    AppColors.blue200,
-    AppColors.blue400,
-    AppColors.blue600,
-    AppColors.blue800,
-    AppColors.blue,
-  ];
-
+  /// [colorPalettes]에서 고른 팔레트와 그 안의 색 단계.
+  int _palette = 2;
   int _colorIndex = 0;
+
+  List<Color> get _colors => colorPalettes[_palette].colors;
   int _templateIndex = 0;
 
   /// 미리보기에 고른 책의 `book.id` (고른 순서대로).
   List<String> _selected = [];
   bool _saving = false;
+
+  /// 책장명. 제목을 누르면 입력 필드로 바뀌고, 저장할 때 함께 보낸다.
+  final _name = TextEditingController();
+  bool _editingName = false;
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  /// 입력을 마치면 다시 제목으로. 비워 두면 저장된 이름으로 되돌린다.
+  void _finishName() {
+    if (!_editingName) return;
+    setState(() {
+      _editingName = false;
+      if (_name.text.trim().isEmpty) {
+        _name.text =
+            ref.read(bookshelfDecorationProvider(widget.id)).value?.name ?? '';
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -66,12 +79,21 @@ class _BookcaseDecorateScreenState
       final d = next.value;
       if (d == null) return;
       setState(() {
-        _colorIndex = _colors
-            .indexWhere((c) => colorToHex(c) == d.coverColor.toUpperCase())
-            .clamp(0, _colors.length - 1);
-        _templateIndex = _templates
+        _name.text = d.name;
+        // 저장된 색이 들어 있는 팔레트를 찾는다. 없으면 블루 첫 단계.
+        final hex = d.coverColor.toUpperCase();
+        _palette = colorPalettes.indexWhere(
+          (p) => p.colors.any((c) => colorToHex(c) == hex),
+        );
+        if (_palette < 0) {
+          _palette = 2;
+          _colorIndex = 0;
+        } else {
+          _colorIndex = _colors.indexWhere((c) => colorToHex(c) == hex);
+        }
+        _templateIndex = bookshelfTemplates
             .indexWhere((t) => t.$1 == d.templateKey)
-            .clamp(0, _templates.length - 1);
+            .clamp(0, bookshelfTemplates.length - 1);
         _selected = [
           for (final b in [...d.books]..sort((a, b) => a.slot - b.slot))
             b.book.id,
@@ -101,8 +123,10 @@ class _BookcaseDecorateScreenState
           .read(bookshelfDecorationProvider(widget.id).notifier)
           .save(
             BookshelfDecorationRequest(
-              name: current.name,
-              templateKey: _templates[_templateIndex].$1,
+              name: _name.text.trim().isEmpty
+                  ? current.name
+                  : _name.text.trim(),
+              templateKey: bookshelfTemplates[_templateIndex].$1,
               coverColor: colorToHex(_colors[_colorIndex]),
               books: [
                 for (final (i, bookId) in _selected.indexed)
@@ -148,15 +172,55 @@ class _BookcaseDecorateScreenState
                   onTap: () => context.pop(),
                   child: SvgIcon(name: 'back', size: AppIconSizes.lg),
                 ),
-                title: Text(
-                  decoration?.name ?? '',
-                  style: AppTextStyles.h3.copyWith(color: AppColors.neutral90),
-                ),
+                title: _editingName
+                    ? TextField(
+                        controller: _name,
+                        autofocus: true,
+                        // 서버 제한: 앞뒤 공백 제거 후 1~50자.
+                        inputFormatters: [LengthLimitingTextInputFormatter(50)],
+                        textAlign: TextAlign.center,
+                        textInputAction: TextInputAction.done,
+                        style: AppTextStyles.h3.copyWith(
+                          color: AppColors.neutral90,
+                        ),
+                        cursorColor: AppColors.neutral50,
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          hintText: '책장명을 입력하세요',
+                          hintStyle: AppTextStyles.h3.copyWith(
+                            color: AppColors.neutral40,
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        onSubmitted: (_) => _finishName(),
+                        onTapOutside: (_) => _finishName(),
+                      )
+                    : GestureDetector(
+                        onTap: decoration == null
+                            ? null
+                            : () => setState(() => _editingName = true),
+                        child: Text(
+                          _name.text,
+                          style: AppTextStyles.h3.copyWith(
+                            color: AppColors.neutral90,
+                          ),
+                        ),
+                      ),
                 actions: [
-                  SvgIcon(
-                    name: 'write',
-                    size: AppIconSizes.lg,
-                    color: AppColors.neutral40,
+                  GestureDetector(
+                    onTap: decoration == null
+                        ? null
+                        : () => _editingName
+                              ? _finishName()
+                              : setState(() => _editingName = true),
+                    child: SvgIcon(
+                      name: 'write',
+                      size: AppIconSizes.lg,
+                      color: _editingName
+                          ? AppColors.neutral90
+                          : AppColors.neutral40,
+                    ),
                   ),
                 ],
               ),
@@ -180,7 +244,7 @@ class _BookcaseDecorateScreenState
                           ),
                           SizedBox(height: 16),
                           AppChipList(
-                            data: [for (final t in _templates) t.$2],
+                            data: [for (final t in bookshelfTemplates) t.$2],
                             selectedIndex: _templateIndex,
                             onSelected: (i) =>
                                 setState(() => _templateIndex = i),
@@ -204,6 +268,11 @@ class _BookcaseDecorateScreenState
                             colors: _colors,
                             selected: _colorIndex,
                             onSelected: (i) => setState(() => _colorIndex = i),
+                            onPaletteTap: () => showColorPaletteSheet(
+                              context,
+                              selected: _palette,
+                              onSelected: (i) => setState(() => _palette = i),
+                            ),
                           ),
                         ],
                       ),
