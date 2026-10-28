@@ -97,10 +97,16 @@ class _BookcaseFormScreenState extends ConsumerState<BookcaseFormScreen> {
 
     final addButton = AppButton(
       onTap: () => _addBook(),
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+      // 좁은 화면에서 두 줄로 나뉘지 않게, 넘치면 글자를 줄인다.
       child: Center(
-        child: Text(
-          '책 추가하기',
-          style: AppTextStyles.caption1.copyWith(color: AppColors.neutral60),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            '책 추가하기',
+            maxLines: 1,
+            style: AppTextStyles.caption1.copyWith(color: AppColors.neutral60),
+          ),
         ),
       ),
     );
