@@ -6,11 +6,20 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 
 class BookList extends StatelessWidget {
-  const BookList({super.key, this.title, this.action, required this.data});
+  const BookList({
+    super.key,
+    this.title,
+    this.action,
+    required this.data,
+    this.onTap,
+  });
 
   final String? title;
   final Widget? action;
   final List<BookMetadata> data;
+
+  /// 지정하면 상세 화면 이동 대신 호출된다.
+  final ValueChanged<BookMetadata>? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +61,9 @@ class BookList extends StatelessWidget {
           for (var i = 0; i < data.length; i++) ...[
             if (i > 0) SizedBox(height: 20),
             GestureDetector(
-              onTap: () => context.push('/book/${i + 1}'),
+              onTap: onTap != null
+                  ? () => onTap!(data[i])
+                  : () => context.push('/book/${i + 1}'),
               child: BookListItem(book: data[i]),
             ),
           ],

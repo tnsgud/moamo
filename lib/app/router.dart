@@ -46,7 +46,9 @@ final appRouter = GoRouter(
             ),
             GoRoute(
               path: BookSearchScreen.url,
-              builder: (context, state) => BookSearchScreen(),
+              builder: (context, state) => BookSearchScreen(
+                bookshelfId: state.uri.queryParameters['bookshelfId'],
+              ),
             ),
             GoRoute(
               path: BookDetailScreen.url,
@@ -149,7 +151,8 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: BookcaseDecorateScreen.url,
-      builder: (context, state) => BookcaseDecorateScreen(),
+      builder: (context, state) =>
+          BookcaseDecorateScreen(id: state.pathParameters['id']!),
     ),
   ],
 );

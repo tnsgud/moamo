@@ -21,8 +21,8 @@ class BookcaseListCard extends StatelessWidget {
 
   final String title;
 
-  /// (색상, 제목이 보이는 큰 책 여부)
-  final List<(Color, bool)> books;
+  /// (제목, 색상, 제목이 보이는 큰 책 여부)
+  final List<(String, Color, bool)> books;
   final bool isExpanded;
   final bool isEditing;
   final bool isEnabled;
@@ -84,9 +84,9 @@ class BookcaseListCard extends StatelessWidget {
                 for (var i = 0; i < books.length; i++) ...[
                   if (i > 0) SizedBox(width: 8),
                   LibraryBook(
-                    title: '해리포터와 마법사의 돌',
-                    isExtended: books[i].$2,
-                    color: books[i].$1,
+                    title: books[i].$1,
+                    isExtended: books[i].$3,
+                    color: books[i].$2,
                   ),
                 ],
               ],

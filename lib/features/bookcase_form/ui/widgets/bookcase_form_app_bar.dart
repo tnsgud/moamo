@@ -8,9 +8,12 @@ import 'package:moamo/shared/widget/app_button.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookcaseFormAppBar extends StatelessWidget {
-  const BookcaseFormAppBar({super.key, required this.title});
+  const BookcaseFormAppBar({super.key, required this.title, this.onSave});
 
   final String title;
+
+  /// 저장 확인 다이얼로그에서 '확인'을 누르면 호출된다.
+  final VoidCallback? onSave;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +28,8 @@ class BookcaseFormAppBar extends StatelessWidget {
       ),
       actions: [
         AppButton(
-          onTap: () {
-            showDialog(
+          onTap: () async {
+            final ok = await showDialog<bool>(
               context: context,
               builder: (context) {
                 return Dialog(
@@ -83,6 +86,7 @@ class BookcaseFormAppBar extends StatelessWidget {
                 );
               },
             );
+            if (ok == true) onSave?.call();
           },
           child: Text(
             '저장',

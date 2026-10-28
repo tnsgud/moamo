@@ -6,7 +6,9 @@ import 'package:moamo/shared/widget/app_chip.dart';
 import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 
 class BookcaseStatusBar extends StatelessWidget {
-  const BookcaseStatusBar({super.key});
+  const BookcaseStatusBar({super.key, required this.total});
+
+  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +24,10 @@ class BookcaseStatusBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              AppChip(name: '전체: 00/20', isSelected: true),
+              AppChip(
+                name: '전체: ${total.toString().padLeft(2, '0')}/20',
+                isSelected: true,
+              ),
               SizedBox(width: 8),
               AppChip(name: '인증: 00', isSelected: false),
               SizedBox(width: 8),

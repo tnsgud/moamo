@@ -10,21 +10,12 @@ part of 'my_bookshelves_provider.dart';
 // ignore_for_file: type=lint, type=warning
 /// 내 책장 목록 (생성 시각 최신순). 책장이 없으면 빈 리스트.
 
-@ProviderFor(myBookshelves)
+@ProviderFor(MyBookshelves)
 final myBookshelvesProvider = MyBookshelvesProvider._();
 
 /// 내 책장 목록 (생성 시각 최신순). 책장이 없으면 빈 리스트.
-
 final class MyBookshelvesProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<List<BookshelfResponse>>,
-          List<BookshelfResponse>,
-          FutureOr<List<BookshelfResponse>>
-        >
-    with
-        $FutureModifier<List<BookshelfResponse>>,
-        $FutureProvider<List<BookshelfResponse>> {
+    extends $AsyncNotifierProvider<MyBookshelves, List<BookshelfResponse>> {
   /// 내 책장 목록 (생성 시각 최신순). 책장이 없으면 빈 리스트.
   MyBookshelvesProvider._()
     : super(
@@ -42,14 +33,343 @@ final class MyBookshelvesProvider
 
   @$internal
   @override
-  $FutureProviderElement<List<BookshelfResponse>> $createElement(
+  MyBookshelves create() => MyBookshelves();
+}
+
+String _$myBookshelvesHash() => r'842eaa5ad2999092950e9b19c365b990a14ee7a7';
+
+/// 내 책장 목록 (생성 시각 최신순). 책장이 없으면 빈 리스트.
+
+abstract class _$MyBookshelves extends $AsyncNotifier<List<BookshelfResponse>> {
+  FutureOr<List<BookshelfResponse>> build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<List<BookshelfResponse>>,
+              List<BookshelfResponse>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<BookshelfResponse>>,
+                List<BookshelfResponse>
+              >,
+              AsyncValue<List<BookshelfResponse>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
+/// 책장 한 개의 요약(이름·책 수·템플릿·색상).
+
+@ProviderFor(bookshelf)
+final bookshelfProvider = BookshelfFamily._();
+
+/// 책장 한 개의 요약(이름·책 수·템플릿·색상).
+
+final class BookshelfProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<BookshelfResponse>,
+          BookshelfResponse,
+          FutureOr<BookshelfResponse>
+        >
+    with
+        $FutureModifier<BookshelfResponse>,
+        $FutureProvider<BookshelfResponse> {
+  /// 책장 한 개의 요약(이름·책 수·템플릿·색상).
+  BookshelfProvider._({
+    required BookshelfFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'bookshelfProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$bookshelfHash();
+
+  @override
+  String toString() {
+    return r'bookshelfProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<BookshelfResponse> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<List<BookshelfResponse>> create(Ref ref) {
-    return myBookshelves(ref);
+  FutureOr<BookshelfResponse> create(Ref ref) {
+    final argument = this.argument as String;
+    return bookshelf(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BookshelfProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$myBookshelvesHash() => r'ef418fae805d3326f681ee28ba86d61d710d87a3';
+String _$bookshelfHash() => r'af34df45d0daab489b2e62e91588dabf5054cfc2';
+
+/// 책장 한 개의 요약(이름·책 수·템플릿·색상).
+
+final class BookshelfFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<BookshelfResponse>, String> {
+  BookshelfFamily._()
+    : super(
+        retry: null,
+        name: r'bookshelfProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 책장 한 개의 요약(이름·책 수·템플릿·색상).
+
+  BookshelfProvider call(String bookshelfId) =>
+      BookshelfProvider._(argument: bookshelfId, from: this);
+
+  @override
+  String toString() => r'bookshelfProvider';
+}
+
+/// 책장 안의 책 목록.
+
+@ProviderFor(BookshelfBooks)
+final bookshelfBooksProvider = BookshelfBooksFamily._();
+
+/// 책장 안의 책 목록.
+final class BookshelfBooksProvider
+    extends
+        $AsyncNotifierProvider<BookshelfBooks, List<BookshelfBookResponse>> {
+  /// 책장 안의 책 목록.
+  BookshelfBooksProvider._({
+    required BookshelfBooksFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'bookshelfBooksProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$bookshelfBooksHash();
+
+  @override
+  String toString() {
+    return r'bookshelfBooksProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  BookshelfBooks create() => BookshelfBooks();
+
+  @override
+  bool operator ==(Object other) {
+    return other is BookshelfBooksProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$bookshelfBooksHash() => r'676662d665b40f51829e6aec82e6aa5cdacf9e64';
+
+/// 책장 안의 책 목록.
+
+final class BookshelfBooksFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          BookshelfBooks,
+          AsyncValue<List<BookshelfBookResponse>>,
+          List<BookshelfBookResponse>,
+          FutureOr<List<BookshelfBookResponse>>,
+          String
+        > {
+  BookshelfBooksFamily._()
+    : super(
+        retry: null,
+        name: r'bookshelfBooksProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 책장 안의 책 목록.
+
+  BookshelfBooksProvider call(String bookshelfId) =>
+      BookshelfBooksProvider._(argument: bookshelfId, from: this);
+
+  @override
+  String toString() => r'bookshelfBooksProvider';
+}
+
+/// 책장 안의 책 목록.
+
+abstract class _$BookshelfBooks
+    extends $AsyncNotifier<List<BookshelfBookResponse>> {
+  late final _$args = ref.$arg as String;
+  String get bookshelfId => _$args;
+
+  FutureOr<List<BookshelfBookResponse>> build(String bookshelfId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<List<BookshelfBookResponse>>,
+              List<BookshelfBookResponse>
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<List<BookshelfBookResponse>>,
+                List<BookshelfBookResponse>
+              >,
+              AsyncValue<List<BookshelfBookResponse>>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}
+
+/// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+
+@ProviderFor(BookshelfDecoration)
+final bookshelfDecorationProvider = BookshelfDecorationFamily._();
+
+/// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+final class BookshelfDecorationProvider
+    extends
+        $AsyncNotifierProvider<
+          BookshelfDecoration,
+          BookshelfDecorationResponse
+        > {
+  /// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+  BookshelfDecorationProvider._({
+    required BookshelfDecorationFamily super.from,
+    required String super.argument,
+  }) : super(
+         retry: null,
+         name: r'bookshelfDecorationProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
+
+  @override
+  String debugGetCreateSourceHash() => _$bookshelfDecorationHash();
+
+  @override
+  String toString() {
+    return r'bookshelfDecorationProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  BookshelfDecoration create() => BookshelfDecoration();
+
+  @override
+  bool operator ==(Object other) {
+    return other is BookshelfDecorationProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$bookshelfDecorationHash() =>
+    r'd79b657b5304c2f8d1b2e683d4812e1c3fe45922';
+
+/// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+
+final class BookshelfDecorationFamily extends $Family
+    with
+        $ClassFamilyOverride<
+          BookshelfDecoration,
+          AsyncValue<BookshelfDecorationResponse>,
+          BookshelfDecorationResponse,
+          FutureOr<BookshelfDecorationResponse>,
+          String
+        > {
+  BookshelfDecorationFamily._()
+    : super(
+        retry: null,
+        name: r'bookshelfDecorationProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+
+  BookshelfDecorationProvider call(String bookshelfId) =>
+      BookshelfDecorationProvider._(argument: bookshelfId, from: this);
+
+  @override
+  String toString() => r'bookshelfDecorationProvider';
+}
+
+/// 책장 꾸미기(이름·템플릿·표지 색상·미리보기 배치).
+
+abstract class _$BookshelfDecoration
+    extends $AsyncNotifier<BookshelfDecorationResponse> {
+  late final _$args = ref.$arg as String;
+  String get bookshelfId => _$args;
+
+  FutureOr<BookshelfDecorationResponse> build(String bookshelfId);
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref =
+        this.ref
+            as $Ref<
+              AsyncValue<BookshelfDecorationResponse>,
+              BookshelfDecorationResponse
+            >;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<
+                AsyncValue<BookshelfDecorationResponse>,
+                BookshelfDecorationResponse
+              >,
+              AsyncValue<BookshelfDecorationResponse>,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, () => build(_$args));
+  }
+}

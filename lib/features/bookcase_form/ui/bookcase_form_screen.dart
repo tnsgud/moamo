@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moamo/features/book_search/model/book.dart';
+import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/app_button.dart';
+import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/widget/book_info_tile.dart';
 
 import 'package:moamo/shared/widget/search_field.dart';
@@ -15,33 +18,81 @@ import 'widgets/bookcase_form_app_bar.dart';
 import 'widgets/bookcase_preview.dart';
 import 'widgets/bookcase_status_bar.dart';
 
-class BookcaseFormScreen extends StatelessWidget {
+class BookcaseFormScreen extends ConsumerWidget {
   const BookcaseFormScreen({super.key, this.id});
 
   static String createUrl = '/bookcase/new';
   static String editUrl = '/bookcase/:id/edit';
 
+  /// null이면 새 책장 만들기.
   final String? id;
 
+  /// 새 책장을 만들고 편집 화면으로 바꾼다. 실패하면 null.
+  Future<String?> _create(BuildContext context, WidgetRef ref) async {
+    final router = GoRouter.of(context);
+    try {
+      final count = ref.read(myBookshelvesProvider).value?.length ?? 0;
+      final shelf = await ref
+          .read(myBookshelvesProvider.notifier)
+          .create('책장 ${count + 1}');
+      router.pushReplacement('/bookcase/${shelf.id}/edit');
+      return shelf.id;
+    } catch (_) {
+      if (context.mounted) {
+        showAppToast(context, '책장을 만들지 못했어요.', isError: true);
+      }
+      return null;
+    }
+  }
+
+  /// 책 검색 화면에 책장 id를 넘겨서, 고른 책이 이 책장에 담기게 한다.
+  Future<void> _addBook(BuildContext context, WidgetRef ref) async {
+    final router = GoRouter.of(context);
+    final bookshelfId = id ?? await _create(context, ref);
+    if (bookshelfId == null) return;
+    router.push('/book-search?bookshelfId=$bookshelfId');
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final id = this.id;
+    final title = id == null
+        ? '새 책장'
+        : ref.watch(bookshelfProvider(id)).value?.name ?? '';
+    final books = id == null
+        ? null
+        : ref.watch(bookshelfBooksProvider(id)).value;
+
+    final addButton = AppButton(
+      onTap: () => _addBook(context, ref),
+      child: Center(
+        child: Text(
+          '책 추가하기',
+          style: AppTextStyles.caption1.copyWith(color: AppColors.neutral60),
+        ),
+      ),
+    );
+
     return Stack(
       children: [
         Column(
           children: [
-            BookcaseFormAppBar(title: '책장 1'),
+            BookcaseFormAppBar(
+              title: title,
+              onSave: () => id == null ? _create(context, ref) : context.pop(),
+            ),
             // 검색창을 누르면 책 검색 화면으로 이동한다.
             GestureDetector(
-              onTap: () => context.push('/book-search'),
+              onTap: () => _addBook(context, ref),
               child: AbsorbPointer(child: SearchField(onSubmitted: (_) {})),
             ),
             SizedBox(height: 16),
-            BookcaseStatusBar(),
+            BookcaseStatusBar(total: books?.length ?? 0),
             SizedBox(height: 16),
             BookcasePreview(
-              title: '책장 1',
+              title: title,
               onTap: () {
-                context.push('/bookcase/decorate');
+                if (id != null) context.push('/bookcase/$id/decorate');
               },
             ),
             SizedBox(height: 20),
@@ -54,48 +105,23 @@ class BookcaseFormScreen extends StatelessWidget {
                 padding: EdgeInsets.only(
                   bottom: MediaQuery.paddingOf(context).bottom + 24,
                 ),
-                children: id == null
-                    ? [
-                        AppButton(
-                          onTap: () => context.push('/book-search'),
-                          child: Center(
-                            child: Text(
-                              '책 추가하기',
-                              style: AppTextStyles.caption1.copyWith(
-                                color: AppColors.neutral60,
-                              ),
-                            ),
-                          ),
+                children: [
+                  for (final (index, item) in (books ?? []).indexed)
+                    GestureDetector(
+                      // TODO: 책 상세 API 연결 시 bookshelfId·book.id로 이동
+                      onTap: () => context.push('/book/${index + 1}'),
+                      child: BookInfoTile(
+                        book: Book(
+                          title: item.book.title,
+                          author: item.book.authors ?? '',
+                          category: item.book.classificationName ?? '',
+                          imageUrl: item.book.coverImageUrl ?? '',
+                          isCertification: false,
                         ),
-                      ]
-                    : [
-                        ...List.generate(
-                          19,
-                          (index) => GestureDetector(
-                            onTap: () => context.push('/book/${index + 1}'),
-                            child: BookInfoTile(
-                              book: Book(
-                                title: '해리포터와 마법사의 돌',
-                                author: '조앤 K.롤링',
-                                category: '소설',
-                                imageUrl: '',
-                                isCertification: false,
-                              ),
-                            ),
-                          ),
-                        ),
-                        AppButton(
-                          onTap: () => context.push('/book-search'),
-                          child: Center(
-                            child: Text(
-                              '책 추가하기',
-                              style: AppTextStyles.caption1.copyWith(
-                                color: AppColors.neutral60,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ),
+                  addButton,
+                ],
               ),
             ),
           ],

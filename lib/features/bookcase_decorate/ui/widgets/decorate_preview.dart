@@ -7,9 +7,20 @@ import 'package:moamo/shared/widget/app_chip.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class DecoratePreview extends StatelessWidget {
-  const DecoratePreview({super.key, required this.color});
+  const DecoratePreview({
+    super.key,
+    required this.color,
+    required this.titles,
+    required this.itemCount,
+  });
+
+  static const maxBooks = 3;
 
   final Color color;
+
+  /// 미리보기에 놓을 책 제목. 첫 책은 앞표지, 나머지는 책등으로 보여준다.
+  final List<String> titles;
+  final int itemCount;
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +50,12 @@ class DecoratePreview extends StatelessWidget {
                 borderRadius: AppRadius.sm,
               ),
               child: Text(
-                '책 3/3',
+                '책 ${titles.length}/$maxBooks',
                 style: AppTextStyles.btn2.copyWith(color: AppColors.neutral90),
               ),
             ),
             SizedBox(width: 8),
-            AppChip(name: '아이템: 1/3', isSelected: false),
+            AppChip(name: '아이템: $itemCount/3', isSelected: false),
           ],
         ),
         SizedBox(height: 16),
@@ -59,39 +70,40 @@ class DecoratePreview extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Container(
-                width: 60,
-                height: 75,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: AppRadius.xxs,
-                  border: Border.all(color: AppColors.neutral70),
-                ),
-                child: Text(
-                  '해리포터와 마법사의 돌',
-                  maxLines: 1,
-                  style: AppTextStyles.caption1.copyWith(
-                    overflow: TextOverflow.ellipsis,
-
-                    color: AppColors.neutral90,
-                  ),
-                ),
-              ),
-              SizedBox(width: 8),
-              _spine(AppColors.blue800, 15),
-              SizedBox(width: 8),
-              _spine(AppColors.blue600, 15),
+              for (final (i, title) in titles.indexed) ...[
+                if (i > 0) SizedBox(width: 8),
+                i == 0 ? _front(title) : _spine(color, 15),
+              ],
               Spacer(),
-              _addSlot(),
-              SizedBox(width: 12),
-              _addSlot(),
+              for (var i = titles.length; i < maxBooks; i++) ...[
+                if (i > titles.length) SizedBox(width: 12),
+                _addSlot(),
+              ],
             ],
           ),
         ),
       ],
     );
   }
+
+  Widget _front(String title) => Container(
+    width: 60,
+    height: 75,
+    alignment: Alignment.center,
+    decoration: BoxDecoration(
+      color: color,
+      borderRadius: AppRadius.xxs,
+      border: Border.all(color: AppColors.neutral70),
+    ),
+    child: Text(
+      title,
+      maxLines: 1,
+      style: AppTextStyles.caption1.copyWith(
+        overflow: TextOverflow.ellipsis,
+        color: AppColors.neutral90,
+      ),
+    ),
+  );
 
   Widget _spine(Color color, double width) => Container(
     width: width,
