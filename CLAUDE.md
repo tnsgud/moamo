@@ -10,6 +10,8 @@ Moamo — a Flutter app (Android/iOS) for gathering around books ("책으로 모
 
 ```bash
 flutter pub get
+dart run build_runner build -d          # generate *.g.dart (not committed; run after clone / pulling provider changes)
+dart run build_runner watch -d          # regenerate on save while developing
 flutter run
 flutter analyze                      # lints: package:flutter_lints/flutter.yaml
 dart format lib test
