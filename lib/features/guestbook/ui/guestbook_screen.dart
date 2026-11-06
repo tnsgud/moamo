@@ -124,6 +124,23 @@ class _GuestbookState extends ConsumerState<_Guestbook> {
     }
   }
 
+  Widget _empty() => Center(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          '아직 남겨진 방명록이 없어요.',
+          style: AppTextStyles.subtitle.copyWith(color: AppColors.neutral50),
+        ),
+        SizedBox(height: 8),
+        Text(
+          '첫 방명록을 남겨 보세요!',
+          style: AppTextStyles.caption1.copyWith(color: AppColors.neutral40),
+        ),
+      ],
+    ),
+  );
+
   static String _date(DateTime? d) {
     if (d == null) return '';
     final l = d.toLocal();
@@ -155,6 +172,8 @@ class _GuestbookState extends ConsumerState<_Guestbook> {
         Expanded(
           child: loading
               ? _EntriesSkeleton()
+              : entries.isEmpty
+              ? _empty()
               : ListView.separated(
                   padding: _padding.copyWith(top: 20, bottom: 20),
                   itemCount: entries.length,

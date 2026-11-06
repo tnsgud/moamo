@@ -17,9 +17,13 @@ class BookcaseListCard extends StatelessWidget {
     required this.onToggleExpanded,
     required this.onEnabledChanged,
     required this.onDelete,
+    this.isLoading = false,
   });
 
   final String title;
+
+  /// 책 목록을 아직 불러오는 중인지.
+  final bool isLoading;
 
   /// (제목, 색상, 제목이 보이는 큰 책 여부)
   final List<(String, Color, bool)> books;
@@ -79,18 +83,30 @@ class BookcaseListCard extends StatelessWidget {
           ),
           if (showBooks) ...[
             SizedBox(height: 24),
-            Row(
-              children: [
-                for (var i = 0; i < books.length; i++) ...[
-                  if (i > 0) SizedBox(width: 8),
-                  LibraryBook(
-                    title: books[i].$1,
-                    isExtended: books[i].$3,
-                    color: books[i].$2,
+            if (books.isEmpty)
+              // 책 목록을 불러오는 중에는 "없어요"를 띄우지 않는다.
+              Visibility.maintain(
+                visible: !isLoading,
+                child: Text(
+                  '아직 담긴 책이 없어요.',
+                  style: AppTextStyles.body2.copyWith(
+                    color: AppColors.neutral50,
                   ),
+                ),
+              )
+            else
+              Row(
+                children: [
+                  for (var i = 0; i < books.length; i++) ...[
+                    if (i > 0) SizedBox(width: 8),
+                    LibraryBook(
+                      title: books[i].$1,
+                      isExtended: books[i].$3,
+                      color: books[i].$2,
+                    ),
+                  ],
                 ],
-              ],
-            ),
+              ),
           ],
         ],
       ),

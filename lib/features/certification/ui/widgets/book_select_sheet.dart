@@ -13,6 +13,8 @@ import 'package:moamo/shared/widget/svg_icon.dart';
 Future<Book?> showBookSelectSheet(BuildContext context, List<Book> books) {
   return showModalBottomSheet<Book>(
     context: context,
+    // 탭 영역이 아니라 화면 전체(하단 탭바 포함) 위에 띄운다.
+    useRootNavigator: true,
     isScrollControlled: true,
     backgroundColor: AppColors.neutral0,
     shape: RoundedRectangleBorder(
@@ -120,39 +122,47 @@ class _BookCard extends StatelessWidget {
                 : Image.network(book.imageUrl, fit: BoxFit.cover),
           ),
           SizedBox(width: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 분류가 없어도 자리는 남겨서 제목 위치가 바뀌지 않게 한다.
-              Visibility.maintain(
-                visible: category != null,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppColors.neutral05,
-                    borderRadius: AppRadius.xs,
-                  ),
-                  child: Text(
-                    category ?? '분류',
-                    style: AppTextStyles.caption2.copyWith(
-                      color: AppColors.neutral70,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 분류가 없어도 자리는 남겨서 제목 위치가 바뀌지 않게 한다.
+                Visibility.maintain(
+                  visible: category != null,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.neutral05,
+                      borderRadius: AppRadius.xs,
+                    ),
+                    child: Text(
+                      category ?? '분류',
+                      style: AppTextStyles.caption2.copyWith(
+                        color: AppColors.neutral70,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SizedBox(height: 12),
-              Text(
-                book.title,
-                style: AppTextStyles.btn2.copyWith(color: AppColors.neutral90),
-              ),
-              SizedBox(height: 4),
-              Text(
-                book.author,
-                style: AppTextStyles.caption1.copyWith(
-                  color: AppColors.neutral50,
+                SizedBox(height: 12),
+                Text(
+                  book.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.btn2.copyWith(
+                    color: AppColors.neutral90,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(height: 4),
+                Text(
+                  book.author,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.caption1.copyWith(
+                    color: AppColors.neutral50,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

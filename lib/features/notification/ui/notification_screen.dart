@@ -78,11 +78,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
             if (items.isEmpty) Padding(padding: _padding, child: _divider()),
             SizedBox(height: 24),
             // 칩 목록은 오른쪽 화면 끝까지 스크롤되도록 오른쪽 패딩을 주지 않는다.
-            AppChipList(
-              data: _categories,
-              selectedIndex: _category,
-              onSelected: (i) => setState(() => _category = i),
-              padding: EdgeInsets.only(left: AppBaseSizes.bodyHorizontal),
+            // 칩이 화면보다 좁으면 Column이 가운데로 보내서 왼쪽 여백이 커진다.
+            Align(
+              alignment: Alignment.centerLeft,
+              child: AppChipList(
+                data: _categories,
+                selectedIndex: _category,
+                onSelected: (i) => setState(() => _category = i),
+                padding: EdgeInsets.only(left: AppBaseSizes.bodyHorizontal),
+              ),
             ),
             SizedBox(height: 16),
             if (items.isNotEmpty) Padding(padding: _padding, child: _divider()),

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class GuestbookAppBar extends StatelessWidget {
@@ -41,10 +42,14 @@ class GuestbookAppBar extends StatelessWidget {
           ],
         ),
         actions: [
-          SvgIcon(
-            name: 'setting',
-            size: AppIconSizes.lg,
-            color: AppColors.neutral40,
+          // TODO: 방명록 설정 화면이 생기면 연결
+          GestureDetector(
+            onTap: () => showAppToast(context, '방명록 설정은 준비 중이에요.'),
+            child: SvgIcon(
+              name: 'setting',
+              size: AppIconSizes.lg,
+              color: AppColors.neutral40,
+            ),
           ),
         ],
       ),

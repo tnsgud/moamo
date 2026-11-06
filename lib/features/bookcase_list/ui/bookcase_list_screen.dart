@@ -124,6 +124,7 @@ class _BookcaseListScreenState extends ConsumerState<BookcaseListScreen> {
                       : () => context.push('/bookcase/${shelf.id}/edit'),
                   child: BookcaseListCard(
                     title: shelf.name,
+                    isLoading: books == null,
                     books: [
                       for (final (j, b) in (books ?? []).take(6).indexed)
                         (b.book.title, color, j == 0),
