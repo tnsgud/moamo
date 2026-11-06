@@ -118,7 +118,8 @@ final appRouter = GoRouter(
             _route(
               BookBoardScreen.url,
               (state) => BookBoardScreen(
-                bookId: int.parse(state.pathParameters['id']!),
+                isbn: state.pathParameters['isbn']!,
+                initial: state.extra as BookMetadata?,
               ),
             ),
             _route(PostWriteScreen.bookUrl, (_) => PostWriteScreen()),

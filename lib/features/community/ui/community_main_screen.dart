@@ -136,6 +136,12 @@ class _CommunityMainScreenState extends ConsumerState<CommunityMainScreen> {
                           coverUrls: [
                             for (final b in popular ?? []) b.coverImageUrl,
                           ],
+                          onTap: popular == null
+                              ? null
+                              : (i) => context.push(
+                                  '/community/book/${popular[i].isbn}',
+                                  extra: popular[i],
+                                ),
                         ),
                       ),
                       SizedBox(height: 32),

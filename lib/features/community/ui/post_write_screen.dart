@@ -15,7 +15,7 @@ class PostWriteScreen extends StatefulWidget {
     this.saveIcon = 'success',
   });
 
-  static String bookUrl = '/community/book/:id/write';
+  static String bookUrl = '/community/book/:isbn/write';
   static String freeUrl = '/community/free/write';
 
   final String title;

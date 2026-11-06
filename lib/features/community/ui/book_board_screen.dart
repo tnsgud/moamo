@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:moamo/features/book_search/model/book_category.dart';
+import 'package:moamo/features/book_search/model/book_search_provider.dart';
 import 'package:moamo/features/book_search/ui/widgets/app_chip_list.dart';
+import 'package:moamo/shared/api/export.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/features/community/model/community_post.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
@@ -16,17 +21,20 @@ import 'widgets/post_list_item.dart';
 import 'widgets/section_title.dart';
 import 'widgets/sort_menu_button.dart';
 
-class BookBoardScreen extends StatefulWidget {
-  const BookBoardScreen({super.key, required this.bookId});
+class BookBoardScreen extends ConsumerStatefulWidget {
+  const BookBoardScreen({super.key, required this.isbn, this.initial});
 
-  final int bookId;
-  static String url = '/community/book/:id';
+  final String isbn;
+
+  /// 목록에서 넘겨받은 책 정보. 없으면 ISBN으로 불러온다.
+  final BookMetadata? initial;
+  static String url = '/community/book/:isbn';
 
   @override
-  State<BookBoardScreen> createState() => _BookBoardScreenState();
+  ConsumerState<BookBoardScreen> createState() => _BookBoardScreenState();
 }
 
-class _BookBoardScreenState extends State<BookBoardScreen> {
+class _BookBoardScreenState extends ConsumerState<BookBoardScreen> {
   static const _categories = ['전체', '책 후기', '질문', '의견토론'];
   static const _sorts = ['최신순', '오래된 순', '인기순'];
 
@@ -127,7 +135,7 @@ class _BookBoardScreenState extends State<BookBoardScreen> {
 
   Future<void> _write() async {
     final posted = await context.push<bool>(
-      '/community/book/${widget.bookId}/write',
+      '/community/book/${widget.isbn}/write',
     );
     if (posted == true && mounted) {
       showAppToast(context, '게시물이 작성되었습니다.');
@@ -287,44 +295,71 @@ class _BookBoardScreenState extends State<BookBoardScreen> {
     ],
   );
 
-  Widget _bookCard() => Container(
-    width: double.infinity,
-    padding: EdgeInsets.all(20),
-    decoration: BoxDecoration(
-      border: Border.all(color: AppColors.neutral15, width: 0.5),
-      borderRadius: AppRadius.xl,
-    ),
-    child: Row(
-      children: [
-        // TODO: 책 표지 이미지로 교체
-        Container(
-          width: 68,
-          height: 83,
-          decoration: BoxDecoration(
-            color: AppColors.neutral50,
-            borderRadius: AppRadius.xxs,
-          ),
+  Widget _bookCard() {
+    final book =
+        widget.initial ?? ref.watch(externalBookProvider(widget.isbn)).value;
+    final category = bookCategoryLabel(book?.classificationName);
+    final coverUrl = book?.coverImageUrl;
+
+    return AppSkeleton(
+      enabled: book == null,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppColors.neutral15, width: 0.5),
+          borderRadius: AppRadius.xl,
         ),
-        SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            PostCategoryLabel('소설'),
-            SizedBox(height: 12),
-            Text(
-              '해리포터와 마법사의 돌',
-              style: AppTextStyles.btn2.copyWith(color: AppColors.neutral90),
+            Skeleton.leaf(
+              child: Container(
+                width: 68,
+                height: 83,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.neutral50,
+                  borderRadius: AppRadius.xxs,
+                ),
+                child: coverUrl == null
+                    ? null
+                    : Image.network(coverUrl, fit: BoxFit.cover),
+              ),
             ),
-            SizedBox(height: 4),
-            Text(
-              '조앤 K.롤링',
-              style: AppTextStyles.caption1.copyWith(
-                color: AppColors.neutral50,
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 분류가 없어도 자리는 남겨서 배치가 바뀌지 않게 한다.
+                  Visibility.maintain(
+                    visible: book == null || category != null,
+                    child: PostCategoryLabel(category ?? '분류'),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    book?.title ?? '책 제목을 불러오고 있어요',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.btn2.copyWith(
+                      color: AppColors.neutral90,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    book == null ? '저자 이름' : book.authors ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.caption1.copyWith(
+                      color: AppColors.neutral50,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-      ],
-    ),
-  );
+      ),
+    );
+  }
 }
