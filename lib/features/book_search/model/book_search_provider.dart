@@ -5,8 +5,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'book_search_provider.g.dart';
 
 @riverpod
-Future<BookPageResponse> bookSearch(Ref ref, String keyword) async {
-  final res = await apiClient.books.searchBooks(query: keyword);
+Future<BookPageResponse> bookSearch(
+  Ref ref,
+  String keyword, {
+  BookSort? sort,
+}) async {
+  final res = await apiClient.books.searchBooks(query: keyword, sort: sort);
   return res.data;
 }
 

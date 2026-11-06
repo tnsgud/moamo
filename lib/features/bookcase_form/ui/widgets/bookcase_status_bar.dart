@@ -34,7 +34,12 @@ class BookcaseStatusBar extends StatelessWidget {
               AppChip(name: '미인증: 00', isSelected: false),
             ],
           ),
-          SortButton(),
+          // TODO: 책장 정렬 로직 연결
+          SortButton(
+            options: const ['조회수순', '인기순'],
+            selected: 0,
+            onSelected: (_) {},
+          ),
         ],
       ),
     );

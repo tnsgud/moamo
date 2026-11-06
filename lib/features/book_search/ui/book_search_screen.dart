@@ -29,7 +29,15 @@ class BookSearchScreen extends ConsumerStatefulWidget {
 }
 
 class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
+  static const _sorts = ['조회수순', '인기순'];
+
   String query = '';
+
+  /// 기본값은 조회수순(0).
+  int _sort = 0;
+
+  // TODO: 조회수순 정렬 API가 생기면 연결 (지금은 서버 기본 정렬)
+  BookSort? get _bookSort => _sort == 1 ? BookSort.popular : null;
   final _search = TextEditingController();
 
   @override
@@ -70,7 +78,8 @@ class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
   Widget build(BuildContext context) {
     final books = query.isEmpty
         ? <BookMetadata>[]
-        : ref.watch(bookSearchProvider(query)).value?.books ?? [];
+        : ref.watch(bookSearchProvider(query, sort: _bookSort)).value?.books ??
+              [];
     // 첫 번째 검색 결과와 함께 읽으면 좋은 책.
     final recommendations = books.isEmpty
         ? <BookMetadata>[]
@@ -91,7 +100,11 @@ class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
           SizedBox(height: 32),
           BookList(
             title: '',
-            action: SortButton(),
+            action: SortButton(
+              options: _sorts,
+              selected: _sort,
+              onSelected: (i) => setState(() => _sort = i),
+            ),
             onTap: _openBook,
             data: books,
           ),
