@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moamo/features/book_search/model/book.dart';
+import 'package:moamo/features/book_search/model/book_category.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
@@ -95,6 +96,8 @@ class _BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final category = bookCategoryLabel(book.category);
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(20),
@@ -120,16 +123,20 @@ class _BookCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.neutral05,
-                  borderRadius: AppRadius.xs,
-                ),
-                child: Text(
-                  book.category,
-                  style: AppTextStyles.caption2.copyWith(
-                    color: AppColors.neutral70,
+              // 분류가 없어도 자리는 남겨서 제목 위치가 바뀌지 않게 한다.
+              Visibility.maintain(
+                visible: category != null,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.neutral05,
+                    borderRadius: AppRadius.xs,
+                  ),
+                  child: Text(
+                    category ?? '분류',
+                    style: AppTextStyles.caption2.copyWith(
+                      color: AppColors.neutral70,
+                    ),
                   ),
                 ),
               ),

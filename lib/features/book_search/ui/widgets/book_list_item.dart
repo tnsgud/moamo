@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:moamo/features/book_search/model/book_category.dart';
 import 'package:moamo/shared/api/models/book_metadata.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
@@ -17,6 +18,8 @@ class BookListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final category = bookCategoryLabel(book.classificationName);
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -51,8 +54,10 @@ class BookListItem extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          if (book.classificationName != null)
-                            Container(
+                          // 분류가 없어도 자리는 남겨서 배치가 바뀌지 않게 한다.
+                          Visibility.maintain(
+                            visible: category != null,
+                            child: Container(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 8,
@@ -62,12 +67,13 @@ class BookListItem extends StatelessWidget {
                                 borderRadius: AppRadius.xs,
                               ),
                               child: Text(
-                                book.classificationName!,
+                                category ?? '분류',
                                 style: AppTextStyles.caption2Bold.copyWith(
                                   color: AppColors.neutral50,
                                 ),
                               ),
                             ),
+                          ),
                           SizedBox(width: 8),
                           if (true)
                             Container(
