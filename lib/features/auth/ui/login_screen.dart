@@ -40,7 +40,8 @@ class LoginScreen extends StatelessWidget {
                 title: '회원가입',
                 bgColor: AppColors.secondary100,
                 textColor: AppColors.neutral0,
-                onTap: () => {},
+                // 카카오 로그인 중 신규 회원이면 가입까지 처리된다.
+                onTap: () => login(context),
               ),
               SizedBox(height: 16),
               Center(
