@@ -19,6 +19,10 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   final Duration splashScreenDuration = Duration(seconds: 2);
 
+  /// 서버가 잠들어 있으면 응답이 40초 넘게 걸릴 수 있다.
+  /// 이 시간을 넘기면 자동 로그인을 포기하고 로그인 화면으로 보낸다.
+  final Duration autoLoginTimeout = Duration(seconds: 20);
+
   @override
   void initState() {
     super.initState();
@@ -28,10 +32,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   /// 스플래시를 보여주는 동안 저장된 카카오 토큰으로 자동 로그인을 시도한다.
   Future<void> _start() async {
-    final (token, _) = await (
-      restoreSession(),
-      Future.delayed(splashScreenDuration),
-    ).wait;
+    String? token;
+    try {
+      (token, _) = await (
+        restoreSession().timeout(autoLoginTimeout),
+        Future.delayed(splashScreenDuration),
+      ).wait;
+    } catch (e) {
+      // 시간 초과 등. 실패해도 화면은 넘어가야 한다.
+      debugPrint('[Splash] 자동 로그인 실패: $e');
+    }
     if (!mounted) return;
     context.go(token != null ? LibraryHomeScreen.url : LoginScreen.url);
   }

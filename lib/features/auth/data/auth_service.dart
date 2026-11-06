@@ -86,5 +86,10 @@ Future<String?> restoreSession() async {
   } on DioException catch (e) {
     debugPrint('[Auth] 세션 복구 실패: ${e.response?.statusCode ?? e.type.name}');
     return null;
+  } catch (e) {
+    // 보안 저장소 오류, 응답 파싱 오류 등. 여기서 던지면 스플래시가 멈추고
+    // 401 재시도 중인 요청도 끝나지 않는다.
+    debugPrint('[Auth] 세션 복구 중 오류: $e');
+    return null;
   }
 }
