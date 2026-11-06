@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Moamo — a Flutter app (Android/iOS) for gathering around books ("책으로 모이고, 이야기로 이어지는 곳"). Flutter SDK 3.47.5 (pinned in `.fvmrc`), Dart `^3.12.2`.
+Moamo — a Flutter app (Android/iOS) for gathering around books ("책으로 모이고, 이야기로 이어지는 곳"). Flutter SDK 3.47.7 (pinned in `.fvmrc`), Dart `^3.12.2`.
 
 Status: all screens exist. Wired to the backend (Riverpod + generated API client): Kakao login/auto-login, library home, bookshelves (create/edit/decorate/books), book search/detail/memos, guestbook. Community, My page (items, random draw), notifications and certification still use hard-coded data (`// TODO: 서버 데이터로 교체`) because the backend has no APIs for them yet. Many illustration/image slots are TODO placeholders.
 
