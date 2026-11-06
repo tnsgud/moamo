@@ -4,6 +4,7 @@ import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookListItem extends StatelessWidget {
@@ -29,16 +30,19 @@ class BookListItem extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                Container(
-                  width: 65,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: AppRadius.xxs,
-                    color: AppColors.neutral50,
+                // 로딩 뼈대에서 표지 상자도 뼈대 색으로 칠한다.
+                Skeleton.leaf(
+                  child: Container(
+                    width: 65,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: AppRadius.xxs,
+                      color: AppColors.neutral50,
+                    ),
+                    child: book.coverImageUrl != null
+                        ? Image.network(book.coverImageUrl!)
+                        : null,
                   ),
-                  child: book.coverImageUrl != null
-                      ? Image.network(book.coverImageUrl!)
-                      : null,
                 ),
                 SizedBox(width: 12),
                 Expanded(

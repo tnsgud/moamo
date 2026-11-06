@@ -4,6 +4,7 @@ import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 class BookSummaryCard extends StatelessWidget {
@@ -20,6 +21,22 @@ class BookSummaryCard extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback onToggle;
 
+  /// 책 정보를 불러오는 동안 보여 주는 뼈대.
+  static Widget skeleton() => AppSkeleton(
+    child: BookSummaryCard(
+      book: Book(
+        title: '책 제목을 불러오고 있어요',
+        author: '저자 이름',
+        category: '분류 이름',
+        imageUrl: '',
+        isCertification: false,
+      ),
+      description: '책 소개를 불러오고 있어요. ' * 4,
+      isExpanded: false,
+      onToggle: () {},
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -32,17 +49,19 @@ class BookSummaryCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 68,
-            height: 83,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              color: AppColors.neutral50,
-              borderRadius: AppRadius.xxs,
+          Skeleton.leaf(
+            child: Container(
+              width: 68,
+              height: 83,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppColors.neutral50,
+                borderRadius: AppRadius.xxs,
+              ),
+              child: book.imageUrl.isEmpty
+                  ? null
+                  : Image.network(book.imageUrl, fit: BoxFit.cover),
             ),
-            child: book.imageUrl.isEmpty
-                ? null
-                : Image.network(book.imageUrl, fit: BoxFit.cover),
           ),
           SizedBox(width: 12),
           Expanded(

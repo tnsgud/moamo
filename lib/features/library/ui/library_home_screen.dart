@@ -7,6 +7,7 @@ import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/hex_color.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 
 import 'widgets/create_bookcase.dart';
 import 'widgets/library_app_bar.dart';
@@ -56,7 +57,17 @@ class LibraryHomeScreen extends ConsumerWidget {
                     );
                   },
                 ),
-                loading: () => Center(child: CircularProgressIndicator()),
+                loading: () => AppSkeleton(
+                  child: ListView.separated(
+                    itemCount: 2,
+                    separatorBuilder: (context, index) => SizedBox(height: 20),
+                    itemBuilder: (context, index) => Bookcase(
+                      title: '책장 이름',
+                      color: AppColors.neutral10,
+                      bookTitles: [for (var i = 0; i < 4; i++) '책 제목'],
+                    ),
+                  ),
+                ),
                 error: (error, _) => Center(
                   child: GestureDetector(
                     onTap: () => ref.invalidate(myBookshelvesProvider),

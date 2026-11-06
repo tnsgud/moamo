@@ -7,6 +7,7 @@ import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/dimension/app_base_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/app_toast.dart';
 
 import 'widgets/emoji_panel.dart';
@@ -29,7 +30,7 @@ class GuestbookScreen extends ConsumerWidget {
       body: SafeArea(
         child: member.when(
           data: (m) => _Guestbook(memberId: m.memberId),
-          loading: () => Center(child: CircularProgressIndicator()),
+          loading: () => _EntriesSkeleton(),
           error: (_, _) => Center(
             child: GestureDetector(
               onTap: () => ref.invalidate(currentMemberProvider),
@@ -132,7 +133,9 @@ class _GuestbookState extends ConsumerState<_Guestbook> {
 
   @override
   Widget build(BuildContext context) {
-    final book = ref.watch(guestbookProvider(widget.memberId)).value;
+    final async = ref.watch(guestbookProvider(widget.memberId));
+    final book = async.value;
+    final loading = async.isLoading && !async.hasValue;
     // 서버는 최신순. 채팅처럼 오래된 글이 위로 오게 뒤집는다.
     final entries = (book?.entries ?? []).reversed.toList();
 
@@ -150,41 +153,43 @@ class _GuestbookState extends ConsumerState<_Guestbook> {
           ),
         ),
         Expanded(
-          child: ListView.separated(
-            padding: _padding.copyWith(top: 20, bottom: 20),
-            itemCount: entries.length,
-            separatorBuilder: (context, index) => SizedBox(height: 16),
-            itemBuilder: (context, i) {
-              final e = entries[i];
-              return Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: GuestbookAvatar.size + 10,
-                    child: showAvatar(i) ? GuestbookAvatar() : null,
-                  ),
-                  Expanded(
-                    child: GuestbookCard(
-                      entry: GuestbookEntry(
-                        name: e.authorNickname,
-                        date: _date(e.createdAt),
-                        content: e.content ?? '',
-                        isMine: e.ownerEntry == true,
-                        isNew: e.unread == true,
-                        canEdit: e.canEdit == true,
-                        canDelete: e.canDelete == true,
-                      ),
-                      onDelete: () => _delete(e.id),
-                      onEdit: () => setState(() {
-                        _editingId = e.id;
-                        _input.text = e.content ?? '';
-                      }),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+          child: loading
+              ? _EntriesSkeleton()
+              : ListView.separated(
+                  padding: _padding.copyWith(top: 20, bottom: 20),
+                  itemCount: entries.length,
+                  separatorBuilder: (context, index) => SizedBox(height: 16),
+                  itemBuilder: (context, i) {
+                    final e = entries[i];
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: GuestbookAvatar.size + 10,
+                          child: showAvatar(i) ? GuestbookAvatar() : null,
+                        ),
+                        Expanded(
+                          child: GuestbookCard(
+                            entry: GuestbookEntry(
+                              name: e.authorNickname,
+                              date: _date(e.createdAt),
+                              content: e.content ?? '',
+                              isMine: e.ownerEntry == true,
+                              isNew: e.unread == true,
+                              canEdit: e.canEdit == true,
+                              canDelete: e.canDelete == true,
+                            ),
+                            onDelete: () => _delete(e.id),
+                            onEdit: () => setState(() {
+                              _editingId = e.id;
+                              _input.text = e.content ?? '';
+                            }),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
         ),
         if (_emojiOpen) EmojiPanel(),
         Divider(height: 0.5, thickness: 0.5, color: AppColors.neutral15),
@@ -198,6 +203,42 @@ class _GuestbookState extends ConsumerState<_Guestbook> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// 방명록 글을 불러오는 동안 보여 주는 뼈대.
+class _EntriesSkeleton extends StatelessWidget {
+  const _EntriesSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSkeleton(
+      child: ListView.separated(
+        padding: _GuestbookState._padding.copyWith(top: 20, bottom: 20),
+        itemCount: 4,
+        separatorBuilder: (context, index) => SizedBox(height: 16),
+        itemBuilder: (context, i) => Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: GuestbookAvatar.size + 10,
+              child: GuestbookAvatar(),
+            ),
+            Expanded(
+              child: GuestbookCard(
+                entry: GuestbookEntry(
+                  name: '닉네임',
+                  date: '00월 00일',
+                  content: '방명록 내용을 불러오고 있어요.',
+                ),
+                onDelete: () {},
+                onEdit: () {},
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

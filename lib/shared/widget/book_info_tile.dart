@@ -3,6 +3,7 @@ import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 
 class BookInfoTile extends StatelessWidget {
   const BookInfoTile({super.key, required this.book, this.coverOverlay});
@@ -19,17 +20,20 @@ class BookInfoTile extends StatelessWidget {
       children: [
         Stack(
           children: [
-            Container(
-              width: double.infinity,
-              height: 80,
-              clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: AppColors.blue,
-                borderRadius: AppRadius.xxs,
+            // 로딩 뼈대에서 표지 상자도 뼈대 색으로 칠한다.
+            Skeleton.leaf(
+              child: Container(
+                width: double.infinity,
+                height: 80,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: AppColors.blue,
+                  borderRadius: AppRadius.xxs,
+                ),
+                child: book.imageUrl.isEmpty
+                    ? null
+                    : Image.network(book.imageUrl, fit: BoxFit.cover),
               ),
-              child: book.imageUrl.isEmpty
-                  ? null
-                  : Image.network(book.imageUrl, fit: BoxFit.cover),
             ),
             if (coverOverlay != null)
               Positioned.fill(

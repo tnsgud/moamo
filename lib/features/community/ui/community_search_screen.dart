@@ -12,6 +12,7 @@ import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/search_field.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
@@ -149,7 +150,9 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
             onSelected: (i) => setState(() => _category = i),
           ),
           SizedBox(height: 32),
-          if (books.isEmpty && posts.isEmpty)
+          if (_searching)
+            _bookSkeleton()
+          else if (books.isEmpty && posts.isEmpty)
             _empty()
           else ...[
             if (books.isNotEmpty) ...[
@@ -204,7 +207,9 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
                   ),
           ),
           SizedBox(height: 12),
-          if (books.isEmpty)
+          if (_searching)
+            _bookSkeleton()
+          else if (books.isEmpty)
             Padding(padding: EdgeInsets.only(top: 60), child: _empty())
           else
             for (final e in books) ...[_bookItem(e), SizedBox(height: 12)],
@@ -259,6 +264,31 @@ class _CommunitySearchScreenState extends ConsumerState<CommunitySearchScreen> {
       isbn: book.isbn,
     );
   }
+
+  /// 책 검색 결과를 처음 기다리는 중인지.
+  bool get _searching {
+    if (_query.isEmpty) return false;
+    final search = ref.watch(bookSearchProvider(_query));
+    return search.isLoading && !search.hasValue;
+  }
+
+  Widget _bookSkeleton() => AppSkeleton(
+    child: Column(
+      children: [
+        for (var i = 0; i < 2; i++) ...[
+          BookListItem(
+            book: BookMetadata(
+              isbn: '$i',
+              title: '책 제목을 불러오고 있어요',
+              authors: '저자 이름',
+              classificationName: '분류 이름',
+            ),
+          ),
+          SizedBox(height: 12),
+        ],
+      ],
+    ),
+  );
 
   Widget _bookItem(_SearchBook e) => BookListItem(
     book: e.book,

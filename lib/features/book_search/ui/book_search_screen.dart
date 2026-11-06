@@ -12,6 +12,7 @@ import 'package:moamo/features/book_search/ui/widgets/sort_button.dart';
 import 'package:moamo/shared/api/export.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/book_info_tile.dart';
 import 'package:moamo/shared/widget/search_field.dart';
 import 'package:moamo/features/book_search/model/book.dart';
@@ -30,6 +31,17 @@ class BookSearchScreen extends ConsumerStatefulWidget {
 
 class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
   static const _sorts = ['조회수순', '인기순'];
+
+  /// 검색 결과를 기다리는 동안 뼈대로 그릴 가짜 결과.
+  static final _skeletonBooks = [
+    for (var i = 0; i < 3; i++)
+      BookMetadata(
+        isbn: '$i',
+        title: '책 제목을 불러오고 있어요',
+        authors: '저자 이름',
+        classificationName: '분류 이름',
+      ),
+  ];
 
   String query = '';
 
@@ -76,12 +88,15 @@ class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final books = query.isEmpty
-        ? <BookMetadata>[]
-        : ref.watch(bookSearchProvider(query, sort: _bookSort)).value?.books ??
-              [];
+    final search = query.isEmpty
+        ? null
+        : ref.watch(bookSearchProvider(query, sort: _bookSort));
+    final searching = search != null && search.isLoading && !search.hasValue;
+    final books = searching
+        ? _skeletonBooks
+        : search?.value?.books ?? <BookMetadata>[];
     // 첫 번째 검색 결과와 함께 읽으면 좋은 책.
-    final recommendations = books.isEmpty
+    final recommendations = searching || books.isEmpty
         ? <BookMetadata>[]
         : ref.watch(bookRecommendationsProvider(books.first.isbn)).value ?? [];
 
@@ -98,15 +113,20 @@ class _BookSearchScreenState extends ConsumerState<BookSearchScreen> {
           SizedBox(height: 24),
           AppChipList(data: ['전체', '자기계발서', '소설', '경제•경영서', '에세이']),
           SizedBox(height: 32),
-          BookList(
-            title: '',
-            action: SortButton(
-              options: _sorts,
-              selected: _sort,
-              onSelected: (i) => setState(() => _sort = i),
+          AppSkeleton(
+            enabled: searching,
+            child: BookList(
+              title: '',
+              action: Skeleton.keep(
+                child: SortButton(
+                  options: _sorts,
+                  selected: _sort,
+                  onSelected: (i) => setState(() => _sort = i),
+                ),
+              ),
+              onTap: searching ? null : _openBook,
+              data: books,
             ),
-            onTap: _openBook,
-            data: books,
           ),
           if (recommendations.isNotEmpty) ...[
             Text(

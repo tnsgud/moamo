@@ -5,6 +5,7 @@ import 'package:moamo/features/book_detail/data/book_memos_provider.dart';
 import 'package:moamo/features/library/data/my_bookshelves_provider.dart';
 import 'package:moamo/features/library/ui/add_book_to_bookshelf.dart';
 import 'package:moamo/shared/api/export.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/features/book_search/model/book.dart';
 import 'package:moamo/shared/dimension/app_icon_sizes.dart';
@@ -37,6 +38,23 @@ class BookDetailScreen extends ConsumerStatefulWidget {
 
 class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   static const _tabs = ['메모', '인증'];
+
+  /// 메모를 불러오는 동안 뼈대로 그릴 가짜 메모.
+  static final _skeletonMemos = [
+    for (var i = 0; i < 2; i++)
+      BookMemoResponse(
+        id: '$i',
+        bookshelfBookId: '',
+        bookshelfId: '',
+        bookId: '',
+        visibility: BookMemoVisibility.private,
+        authorId: '',
+        authorNickname: '닉네임',
+        createdAt: DateTime(2026),
+        updatedAt: DateTime(2026),
+        content: '메모 내용을 불러오고 있어요.',
+      ),
+  ];
 
   bool _isExpanded = false;
   int _tab = 0;
@@ -78,18 +96,21 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                BookSummaryCard(
-                  book: Book(
-                    title: item?.book.title ?? '',
-                    author: item?.book.authors ?? '',
-                    category: item?.book.classificationName ?? '',
-                    imageUrl: item?.book.coverImageUrl ?? '',
-                    isCertification: false,
+                if (item == null)
+                  BookSummaryCard.skeleton()
+                else
+                  BookSummaryCard(
+                    book: Book(
+                      title: item.book.title,
+                      author: item.book.authors ?? '',
+                      category: item.book.classificationName ?? '',
+                      imageUrl: item.book.coverImageUrl ?? '',
+                      isCertification: false,
+                    ),
+                    description: item.book.description ?? '',
+                    isExpanded: _isExpanded,
+                    onToggle: () => setState(() => _isExpanded = !_isExpanded),
                   ),
-                  description: item?.book.description ?? '',
-                  isExpanded: _isExpanded,
-                  onToggle: () => setState(() => _isExpanded = !_isExpanded),
-                ),
                 SizedBox(height: 24),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -129,31 +150,40 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                 ),
                 SizedBox(height: 24),
                 if (_tab == 0)
-                  MemoTab(
-                    memoUrl:
-                        '/bookshelf/${widget.bookshelfId}/book/${widget.bookId}/memo',
-                    memos: memos.value ?? [],
-                    onDelete: (memo) async {
-                      try {
-                        await ref
-                            .read(
-                              bookMemosProvider(
-                                widget.bookshelfId,
-                                widget.bookId,
-                              ).notifier,
-                            )
-                            .delete(memo.id);
-                      } catch (_) {
-                        if (context.mounted) {
-                          showAppToast(
-                            context,
-                            '메모를 삭제하지 못했어요.',
-                            isError: true,
-                          );
+                  if (memos.isLoading && !memos.hasValue)
+                    AppSkeleton(
+                      child: MemoTab(
+                        memoUrl: '',
+                        memos: _skeletonMemos,
+                        onDelete: (_) {},
+                      ),
+                    )
+                  else
+                    MemoTab(
+                      memoUrl:
+                          '/bookshelf/${widget.bookshelfId}/book/${widget.bookId}/memo',
+                      memos: memos.value ?? [],
+                      onDelete: (memo) async {
+                        try {
+                          await ref
+                              .read(
+                                bookMemosProvider(
+                                  widget.bookshelfId,
+                                  widget.bookId,
+                                ).notifier,
+                              )
+                              .delete(memo.id);
+                        } catch (_) {
+                          if (context.mounted) {
+                            showAppToast(
+                              context,
+                              '메모를 삭제하지 못했어요.',
+                              isError: true,
+                            );
+                          }
                         }
-                      }
-                    },
-                  )
+                      },
+                    )
                 else
                   CertificationTab(),
               ],

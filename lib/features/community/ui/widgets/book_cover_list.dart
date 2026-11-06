@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:moamo/shared/dimension/app_radius.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 
 import 'section_title.dart';
 
@@ -25,7 +26,8 @@ class BookCoverList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(title),
+        // 로딩 뼈대가 그려질 때도 제목은 그대로 보인다.
+        Skeleton.keep(child: SectionTitle(title)),
         SizedBox(height: 12),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -42,17 +44,22 @@ class BookCoverList extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          height: 100,
-                          width: double.infinity,
-                          clipBehavior: Clip.antiAlias,
-                          decoration: BoxDecoration(
-                            color: AppColors.neutral50,
-                            borderRadius: AppRadius.xxs,
+                        Skeleton.leaf(
+                          child: Container(
+                            height: 100,
+                            width: double.infinity,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              color: AppColors.neutral50,
+                              borderRadius: AppRadius.xxs,
+                            ),
+                            child: i < coverUrls.length && coverUrls[i] != null
+                                ? Image.network(
+                                    coverUrls[i]!,
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
                           ),
-                          child: i < coverUrls.length && coverUrls[i] != null
-                              ? Image.network(coverUrls[i]!, fit: BoxFit.cover)
-                              : null,
                         ),
                         SizedBox(height: 8),
                         Text(

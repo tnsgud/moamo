@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:moamo/features/community/model/community_post.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/search_field.dart';
 
 import 'widgets/book_cover_list.dart';
@@ -125,12 +126,17 @@ class _CommunityMainScreenState extends ConsumerState<CommunityMainScreen> {
                         bookTitle: '해리포터와 마법사의 돌',
                       ),
                       SizedBox(height: 32),
-                      BookCoverList(
-                        title: 'HOT 책 커뮤니티',
-                        titles: [for (final b in popular ?? []) b.title],
-                        coverUrls: [
-                          for (final b in popular ?? []) b.coverImageUrl,
-                        ],
+                      AppSkeleton(
+                        enabled: popular == null,
+                        child: BookCoverList(
+                          title: 'HOT 책 커뮤니티',
+                          titles: popular == null
+                              ? [for (var i = 0; i < 5; i++) '책 제목']
+                              : [for (final b in popular) b.title],
+                          coverUrls: [
+                            for (final b in popular ?? []) b.coverImageUrl,
+                          ],
+                        ),
                       ),
                       SizedBox(height: 32),
                       BookCoverList(

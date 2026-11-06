@@ -6,6 +6,7 @@ import 'package:moamo/features/book_search/model/recent_book_search_history_prov
 import '../../../../shared/dimension/app_icon_sizes.dart';
 import '../../../../shared/theme/app_colors.dart';
 import '../../../../shared/theme/app_text_styles.dart';
+import '../../../../shared/widget/app_skeleton.dart';
 import '../../../../shared/widget/svg_icon.dart';
 
 class RecentSearchHistory extends ConsumerWidget {
@@ -48,8 +49,25 @@ class RecentSearchHistory extends ConsumerWidget {
             ),
           ),
           child: searchHistory.when(
-            loading: () => Text('loading'),
-            error: (error, _) => Text('error ${error}'),
+            loading: () => AppSkeleton(
+              child: Row(
+                children: [
+                  for (var i = 0; i < 3; i++) ...[
+                    if (i > 0) SizedBox(width: 12),
+                    Text(
+                      '검색어',
+                      style: AppTextStyles.btn2.copyWith(
+                        color: AppColors.neutral40,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            error: (_, _) => Text(
+              '최근 검색어를 불러오지 못했어요.',
+              style: AppTextStyles.btn2.copyWith(color: AppColors.neutral40),
+            ),
             data: (data) {
               if (data.isEmpty) {
                 return Text(

@@ -85,7 +85,7 @@ class _BookPreviewScreenState extends ConsumerState<BookPreviewScreen> {
         ),
         Expanded(
           child: book == null
-              ? Center(child: CircularProgressIndicator())
+              ? SingleChildScrollView(child: BookSummaryCard.skeleton())
               : SingleChildScrollView(
                   child: BookSummaryCard(
                     book: Book(

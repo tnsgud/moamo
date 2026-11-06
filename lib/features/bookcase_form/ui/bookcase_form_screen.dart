@@ -11,6 +11,7 @@ import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/theme/hex_color.dart';
 import 'package:moamo/shared/widget/app_button.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/app_toast.dart';
 import 'package:moamo/shared/widget/book_info_tile.dart';
 
@@ -156,6 +157,20 @@ class _BookcaseFormScreenState extends ConsumerState<BookcaseFormScreen> {
                   bottom: MediaQuery.paddingOf(context).bottom + 24,
                 ),
                 children: [
+                  // 책 목록을 불러오는 동안
+                  if (id != null && books == null)
+                    for (var i = 0; i < 4; i++)
+                      AppSkeleton(
+                        child: BookInfoTile(
+                          book: Book(
+                            title: '책 제목',
+                            author: '저자 이름',
+                            category: '',
+                            imageUrl: '',
+                            isCertification: false,
+                          ),
+                        ),
+                      ),
                   for (final item in books ?? [])
                     GestureDetector(
                       // 한 번 누르면 제거 오버레이, 한 번 더 누르면 책장에서 뺀다.

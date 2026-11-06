@@ -9,6 +9,7 @@ import 'package:moamo/shared/dimension/app_icon_sizes.dart';
 import 'package:moamo/shared/theme/app_colors.dart';
 import 'package:moamo/shared/theme/app_text_styles.dart';
 import 'package:moamo/shared/widget/app_dialog.dart';
+import 'package:moamo/shared/widget/app_skeleton.dart';
 import 'package:moamo/shared/widget/svg_icon.dart';
 
 import 'widgets/bookcase_list_card.dart';
@@ -145,7 +146,26 @@ class _BookcaseListScreenState extends ConsumerState<BookcaseListScreen> {
                 );
               },
             ),
-            loading: () => Center(child: CircularProgressIndicator()),
+            loading: () => AppSkeleton(
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                itemCount: 3,
+                separatorBuilder: (context, index) => SizedBox(height: 16),
+                itemBuilder: (context, i) => BookcaseListCard(
+                  title: '책장 이름',
+                  books: [
+                    for (var j = 0; j < 4; j++)
+                      ('책 제목', AppColors.neutral10, j == 0),
+                  ],
+                  isExpanded: true,
+                  isEditing: false,
+                  isEnabled: true,
+                  onToggleExpanded: () {},
+                  onEnabledChanged: (_) {},
+                  onDelete: () {},
+                ),
+              ),
+            ),
             error: (error, _) => Center(
               child: GestureDetector(
                 onTap: () => ref.invalidate(myBookshelvesProvider),
